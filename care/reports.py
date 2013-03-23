@@ -1,90 +1,63 @@
 import datetime
-import dateutil
-import pytz
-from corehq.apps.fixtures.models import FixtureDataItem, FixtureDataType
-from corehq.apps.reports.basic import BasicTabularReport
-from corehq.apps.reports.standard import ProjectReportParametersMixin, DatespanMixin, CustomProjectReport
-from corehq.apps.reports.fields import FilterUsersField, DatespanField
 from corehq.apps.reports.basic import BasicTabularReport, Column
-from corehq.apps.reports.datatables import DataTablesColumn, DataTablesHeader
-from corehq.apps.reports.generic import GenericTabularReport
-from couchforms.models import XFormInstance
-from dimagi.utils.couch.database import get_db
-from corehq.apps.reports import util
+from corehq.apps.reports.datatables import DataTablesHeader, DataTablesColumnGroup
+from corehq.apps.reports.standard import ProjectReportParametersMixin, CustomProjectReport
+from corehq.apps.reports.fields import FilterUsersField, YearField, MonthField
 
 def username(key, report):
     return report.usernames[key[0]]
 
-class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
-    """fields = ['corehq.apps.reports.fields.FilterUsersField',
-              'corehq.apps.reports.fields.DatespanField']
-
-    name = "M&E"
-    slug = "core_benin_m_e"
-
-    @property
-    def headers(self):
-        return DataTablesHeader(DataTablesColumn("Name of FIDA"),
-                                DataTablesColumn("Name of DCTL"))
-
-    @property
-    def rows(self):
-        print self.users, self.datespan
-        rows = []
-        rows.append([
-            "simon",
-            "kelly"
-        ])
-        return rows"""
-
-    name = "CATI Performance Report"
-    slug = "cati_performance"
-    field_classes = (FilterUsersField, DatespanField)
-
-    filter_group_name = "CATI"
+class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin):
+    name = "CARE M&E"
+    slug = "cb_me"
+    field_classes = (FilterUsersField, YearField, MonthField)
 
     couch_view = "care/care_benin"
 
     default_column_order = (
-        'user',
+        'village',
         'newlyRegisteredPregnant',
+        'postPartumRegistration',
+        'postPartumRegistration1'
     )
 
-    user = Column(
-        "Case Owner", calculate_fn=username)
+    village = Column(
+        "Village", calculate_fn=username)
 
     newlyRegisteredPregnant = Column(
-        "Newly Registered Women who are Pregnant", key="newly_registered_pregnant")
+        "Newly Registered Women who are Pregnant", key="newly_registered_pregnant", rotate=True)
+
+    postPartumRegistration = Column(
+        "Post-partum mothers/newborn registrations", key="post_partum_registration", rotate=True)
+
+    postPartumRegistration1 = Column(
+        "Post-partum mothers/newborn registrations", key="post_partum_registration", rotate=True)
+
+    column_group = DataTablesColumnGroup("Test group",
+                                         newlyRegisteredPregnant.data_tables_column,
+                                         postPartumRegistration.data_tables_column)
+    column_group.css_span = 2
+
+    @property
+    def headers(self):
+        return DataTablesHeader(self.village.data_tables_column,
+                                self.column_group,
+                                self.postPartumRegistration1.data_tables_column)
 
     @property
     def start_and_end_keys(self):
-        return ([self.datespan.startdate_utc.year, self.datespan.startdate_utc.month-1],
-                [self.datespan.enddate_utc.year, self.datespan.enddate_utc.month-1])
+        return ([self.year, self.month - 1],
+                [self.year, self.month])
 
     @property
     def keys(self):
         for user in self.users:
             yield [user['user_id']]
 
-
-class MonitoringAndEvaluation(GenericTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
-    fields = ['corehq.apps.reports.fields.FilterUsersField',
-              'corehq.apps.reports.fields.DatespanField']
-
-    name = "M&E"
-    slug = "core_benin_m_e"
+    @property
+    def month(self):
+        return int(self.request.GET.get('month', datetime.datetime.utcnow().month))
 
     @property
-    def headers(self):
-        return DataTablesHeader(DataTablesColumn("Name of FIDA"),
-                                DataTablesColumn("Name of DCTL"))
-
-    @property
-    def rows(self):
-        print self.users, self.datespan
-        rows = []
-        rows.append([
-            "simon",
-            "kelly"
-        ])
-        return rows
+    def year(self):
+        return int(self.request.GET.get('year', datetime.datetime.utcnow().year))

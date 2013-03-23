@@ -9,43 +9,6 @@ function get_form_filled_duration(xform_doc) {
 
 /* CARE related */
 
-function isCAREForm(doc) {
-    return (doc.doc_type === 'XFormInstance'
-            && doc.domain === 'project');
-}
-
-function isACLRC_Enregistrement(doc) {
-    return (doc.xmlns === "http://openrosa.org/formdesigner/5A457301-7D57-4332-8CAC-44E17B5ADBB2");
-}
-
-function isACLRC_SuiviDeEnceinte(doc) {
-    return (doc.xmlns === "http://www.commcarehq.org/example/hello-world");
-}
-
-function isACLRC_Accouchement(doc) {
-    return (doc.xmlns === "http://openrosa.org/formdesigner/2BA7D4F1-E6F4-4EF2-9F00-5A02A28D9410");
-}
-
-function isACLRC_SuiviDeNouveau(doc) {
-    return (doc.xmlns === "http://openrosa.org/formdesigner/E93DB604-C511-463F-B0C2-25952C71A50F");
-}
-
-function isACLRC_SuiviDeAccouchee(doc) {
-    return (doc.xmlns === "http://openrosa.org/formdesigner/9D6BFE31-1613-4D10-8772-1AC3C6979004");
-}
-
-function isACLRC_Reference(doc) {
-    return (doc.xmlns === "http://openrosa.org/formdesigner/B1E6BBC1-ACD3-408B-B3AB-783153063D56");
-}
-
-function isACLRC_SuiviDeReference(doc) {
-    return (doc.xmlns === "http://openrosa.org/formdesigner/A2EEC8AA-4761-4C68-BCFF-B6C0287DAA51");
-}
-
-function isACLRC_FermerLeDossier(doc) {
-    return (doc.xmlns === "http://openrosa.org/formdesigner/09149C06-4933-4EF9-ACC6-40A966D05FD7");
-}
-
 function CARECaseEntry(doc) {
     var self = this;
     self.doc = doc;
