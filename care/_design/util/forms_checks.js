@@ -3,6 +3,15 @@ function isCAREForm(doc) {
         && doc.domain === 'project');
 }
 
+function isCARECase(doc) {
+    return (doc.doc_type === 'CommCareCase'
+        && doc.domain === 'project');
+}
+
+function isCAREWomanCase(doc) {
+    return (isCARECase(doc) && doc.type === 'Woman');
+}
+
 function isACLRC_Enregistrement(doc) {
     return (doc.xmlns === "http://openrosa.org/formdesigner/5A457301-7D57-4332-8CAC-44E17B5ADBB2");
 }
