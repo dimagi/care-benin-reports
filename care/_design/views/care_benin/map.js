@@ -13,6 +13,7 @@ function(doc) {
                 births[births.length-1].birth = new Date(a.date);
             }
         }
+
         return births;
     }
 
@@ -29,6 +30,12 @@ function(doc) {
         return count;
     }
 
+    function adjust_date(date, days) {
+        var adjusted_date = new Date(date);
+        adjusted_date.setDate(adjusted_date.getDate() + days);
+        return adjusted_date;
+    }
+
     if (isCAREWomanCase(doc)) {
         var opened_on_date = new Date(doc.opened_on);
         var status = doc.condition;
@@ -38,23 +45,43 @@ function(doc) {
         if (status === 'enceinte') {
             data.newly_registered_pregnant = 1;
             if (!doc.closed) {
-                emit([owner_id, "pregnant_followed_up"], 1)
+                data.pregnant_followed_up = 1;
             }
         } else if (status === 'accouchee') {
             data.post_partum_registration = 1;
 
             if (doc.suivi_count_enc && doc.suivi_count_enc > 0) {
                 data.pregnancy_followup = 1;
+
                 if (doc.CPN4 === 'oui') {
-                    data.birth_cpn_4 = 1;
+                    emit([owner_id, 'birth_cpn_4', doc.DA], 1);
                 } else if (doc.CPN2 === 'oui') {
-                    data.birth_cpn_2 = 1;
+                    emit([owner_id, 'birth_cpn_2', doc.DA], 1);
                 } else if (doc.CPN1 = 'oui') {
-                    data.birth_cpn_1 = 1;
+                    emit([owner_id, 'birth_cpn_1', doc.DA], 1);
                 } else if (count_matching_props(doc, ['CPN1','CPN2','CPN3','CPN4'], 'non') === 4) {
-                    data.birth_cpn_0 = 1;
+                    emit([owner_id, 'birth_cpn_0', doc.DA], 1);
                 }
             }
+        }
+
+        if (doc.closed) {
+            emit(['case_closed_'+status, new Date(doc.closed_on)], 1)
+        }
+
+        function emit_referral(date) {
+            var adjusted_date = adjust_date(new Date(date).getTime(), 30);
+            emit([owner_id, 'referrals_open_30_days', adjusted_date], 1);
+        }
+
+        if (doc.RC_nne_referee_quand) {
+            emit_referral(doc.RC_nne_referee_quand);
+        }
+        if (doc.RC_acc_referee_quand) {
+            emit_referral(doc.RC_acc_referee_quand);
+        }
+        if (doc.RC_enc_referee_quand) {
+            emit_referral(doc.RC_enc_referee_quand);
         }
 
         // danger signs
@@ -107,24 +134,47 @@ function(doc) {
         // birth follow ups
         var actions = doc.actions;
         var births = [];
+        var vat2_date;
+        var tpi2_date;
         for (var i = 0, l = actions.length; i < l; i++){
             var a = actions[i];
             var properties = a.updated_unknown_properties;
 
+            // TODO: not sure if this is necessary - might be enough to just get the birth date (especially if there is
+            // only one birth per case)
             births = updateBirths(births, a, properties);
 
-            if (a.xform_xmlns !== undefined && a.xform_xmlns !== null) {
-                emit("referral", 1);
+            if (properties.VAT2 === 'oui') {
+                vat2_date = new Date(a.date);
+            }
+
+            if (properties.TPI2 === 'oui') {
+                tpi2_date = new Date(a.date);
             }
         }
+
         for (var i = 0, l = births.length; i < l; i++) {
             var b = births[i];
+            // not sure if this full check is necessary or just check for 'birth'
             if (b.hasOwnProperty('conception') && b.hasOwnProperty('birth')
                 && b.conception.getTime() < b.birth.getTime()){
-                var adjusted_date = new Date(b.birth.getTime());
-                adjusted_date.setDate(adjusted_date.getDate() + 30);
+
+                var adjusted_date = adjust_date(b.birth.getTime(), 30);
                 emit([owner_id, 'births_one_month_ago', adjusted_date], 1);
 
+                if (vat2_date < b.birth) {
+                    emit([owner_id, 'birth_vat_2', b.birth], 1);
+                }
+
+                if (tpi2_date < b.birth) {
+                    emit([owner_id, 'birth_tpi_2', b.birth], 1);
+                }
+
+                if (doc.BCG_et_polio === 'oui') {
+                    emit([owner_id, 'births_one_month_ago_bcg_polio', adjusted_date], 1);
+                }
+
+                // follow ups
                 if (doc.suivi_count_nne !== undefined){
                     switch (+doc.suivi_count_nne) {
                         case 0:
