@@ -5,5 +5,6 @@ CUSTOM_REPORTS = (
         reports.MonitoringAndEvaluation,
         reports.Nurse,
         reports.Outcomes,
+        reports.DangerSigns,
     )),
 )

@@ -1,6 +1,7 @@
 function isCAREForm(doc) {
     return (doc.doc_type === 'XFormInstance'
-        && doc.domain === 'project');
+        && doc.domain === 'project'
+        && doc.form && doc.form.meta);
 }
 
 function isCARECase(doc) {
@@ -117,5 +118,5 @@ function isAS_SuiviDUneReferenceUnNiveauSuperieur(doc) {
 }
 
 function checkNs(doc, ns) {
-    return (doc.xmlns === ns || doc.xform_xmlns === ns);
+    return (doc.xmlns === ns || doc.xform_xmlns === ns || doc === ns);
 }
