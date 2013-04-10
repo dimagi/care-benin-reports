@@ -74,12 +74,12 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
                                      key="newly_registered_pregnant", rotate=True)
 
     pregnant_followed_up = Column("Pregnant Women", key="pregnant_followed_up",
-                                  rotate=True, startkey_fn=lambda: [])
+                                  rotate=True, startkey_fn=lambda x: [], endkey_fn=lambda x: [{}])
 
     high_risk_pregnancy = Column("High risk pregnancies", key="high_risk_pregnancy", rotate=True,
-                                 couch_view="care/form", startkey_fn=lambda: [])
+                                 couch_view="care/form", startkey_fn=lambda x: [])
     anemic_pregnancy = Column("Anemic pregnancies", key="anemic_pregnancy", rotate=True,
-                                 couch_view="care/form", startkey_fn=lambda: [])
+                                 couch_view="care/form", startkey_fn=lambda x: [])
 
 
     # birth
@@ -87,16 +87,16 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
         "Post-partum mothers/newborn registrations", key="post_partum_registration", rotate=True)
 
     stillborns = Column("Stillborns", key="stillborn", rotate=True,
-                        couch_view="care/form", startkey_fn=lambda: [])
+                        couch_view="care/form", startkey_fn=lambda x: [])
 
     failed_pregnancy = Column("Failed pregnancies", key="pregnancy_failed", rotate=True,
-                        couch_view="care/form", startkey_fn=lambda: [])
+                        couch_view="care/form", startkey_fn=lambda x: [])
 
     maternal_death = Column("Maternal deaths", key="maternal_death", rotate=True,
-                        couch_view="care/form", startkey_fn=lambda: [])
+                        couch_view="care/form", startkey_fn=lambda x: [])
 
     child_death_7_days = Column("Babies died before 7 days", key="child_death_7_days", rotate=True,
-                        couch_view="care/form", startkey_fn=lambda: [])
+                        couch_view="care/form", startkey_fn=lambda x: [])
 
     births_total_view = KeyView(key="births_one_month_ago")
 
@@ -383,19 +383,21 @@ class Referrals(BasicTabularReport, CustomProjectReport, ProjectReportParameters
     def groupnames(self):
         return dict([(group._id, group.name) for group in self.groups])
 
-class Outcomes(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
+
+class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
     name = "Outcomes"
     slug = "cb_outcomes"
-    field_classes = (DatespanField,)
+    fields = ('corehq.apps.reports.fields.DatespanField',)
     datespan_default_days = 30
 
     couch_view = "care/form"
 
-    default_column_order = (
-        'gapta',
+    row_list = (
+        {"name": "Numbre of births at clinic with GATPA performed",
+            "view": KeyView(key="birth_gapta")},
+        {"name": "Total references to clinic",
+            "view": KeyView(key="references_to_clinic_total")},
     )
-
-    gapta = Column("Numbre of births at clinic with GATPA performed", key="birth_gapta", rotate=True)
 
     @property
     def start_and_end_keys(self):
@@ -403,9 +405,17 @@ class Outcomes(BasicTabularReport, CustomProjectReport, ProjectReportParametersM
                 [self.datespan.enddate_param_utc])
 
     @property
-    def keys(self):
-        return [[]]
+    def headers(self):
+        return DataTablesHeader(DataTablesColumn(""),
+                                DataTablesColumn("Value")) #, sort_type=DTSortType.NUMERIC)) TODO fix sorting
 
+    @property
+    def rows(self):
+        db = get_db()
+        startkey, endkey = self.start_and_end_keys
+        for row in self.row_list:
+            yield [row["name"], row["view"].get_value([], startkey=startkey, endkey=endkey,
+                                                          couch_view=self.couch_view, db=db)]
 
 class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
     name = "Danger Signs"
