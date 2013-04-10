@@ -134,22 +134,30 @@ function(doc) {
         // birth follow ups
         var actions = doc.actions;
         var births = [];
-        var vat2_date;
+        var vat2_;
         var tpi2_date;
+        var forms_completed ={};
         for (var i = 0, l = actions.length; i < l; i++){
             var a = actions[i];
             var properties = a.updated_unknown_properties;
 
+            if (isRC_Accouchement(a.form_xmlns)) {
+                forms_completed.rc_accouchement = true;
+            }
+
             // TODO: not sure if this is necessary - might be enough to just get the birth date (especially if there is
             // only one birth per case)
             births = updateBirths(births, a, properties);
+        }
 
-            if (properties.VAT2 === 'oui') {
-                vat2_date = new Date(a.date);
+
+        if (forms_completed.rc_accouchement) {
+            if (doc.VAT2 === 'oui') {
+                emit([owner_id, 'birth_vat_2', b.birth], 1);
             }
 
-            if (properties.TPI2 === 'oui') {
-                tpi2_date = new Date(a.date);
+            if (doc.t) {
+                emit([owner_id, 'birth_tpi_2', b.birth], 1);
             }
         }
 
@@ -160,15 +168,7 @@ function(doc) {
                 && b.conception.getTime() < b.birth.getTime()){
 
                 var adjusted_date = adjust_date(b.birth.getTime(), 30);
-                emit([owner_id, 'births_one_month_ago', adjusted_date], 1);
-
-                if (vat2_date < b.birth) {
-                    emit([owner_id, 'birth_vat_2', b.birth], 1);
-                }
-
-                if (tpi2_date < b.birth) {
-                    emit([owner_id, 'birth_tpi_2', b.birth], 1);
-                }
+                emit([owner_id, 'births_one_month_ago', adjusted_         }
 
                 if (doc.BCG_et_polio === 'oui') {
                     emit([owner_id, 'births_one_month_ago_bcg_polio', adjusted_date], 1);
