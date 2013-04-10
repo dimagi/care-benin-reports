@@ -134,14 +134,12 @@ function(doc) {
         // birth follow ups
         var actions = doc.actions;
         var births = [];
-        var vat2_;
-        var tpi2_date;
         var forms_completed ={};
-        for (var i = 0, l = actions.length; i < l; i++){
+        for (var i = 0, l = actions.length; i < l; i++) {
             var a = actions[i];
             var properties = a.updated_unknown_properties;
 
-            if (isRC_Accouchement(a.form_xmlns)) {
+            if (isRC_Accouchement(a.xform_xmlns)) {
                 forms_completed.rc_accouchement = true;
             }
 
@@ -150,13 +148,13 @@ function(doc) {
             births = updateBirths(births, a, properties);
         }
 
-
-        if (forms_completed.rc_accouchement) {
+        // assume presence of DA means birth
+        if (doc.DA) {
             if (doc.VAT2 === 'oui') {
                 emit([owner_id, 'birth_vat_2', b.birth], 1);
             }
 
-            if (doc.t) {
+            if (doc.TPI2 === 'oui') {
                 emit([owner_id, 'birth_tpi_2', b.birth], 1);
             }
         }
@@ -168,7 +166,7 @@ function(doc) {
                 && b.conception.getTime() < b.birth.getTime()){
 
                 var adjusted_date = adjust_date(b.birth.getTime(), 30);
-                emit([owner_id, 'births_one_month_ago', adjusted_         }
+                emit([owner_id, 'births_one_month_ago', adjusted_date], 1);
 
                 if (doc.BCG_et_polio === 'oui') {
                     emit([owner_id, 'births_one_month_ago_bcg_polio', adjusted_date], 1);
