@@ -168,23 +168,30 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
                                              key='births_one_month_ago_bcg_polio', rotate=True)
 
     birth_place_group = DataTablesColumnGroup("Birth place")
-    birth_place_mat_isolee = Column("Maternite Isolee", key="birth_place_mat_isolee", rotate=True, group=birth_place_group)
-    birth_place_cs_arrondissement = Column("CS Arrondissement", key="birth_place_CS_arrondissement", rotate=True, group=birth_place_group)
-    birth_place_cs_commune = Column("CS Commune", key="birth_place_CS_commune", rotate=True, group=birth_place_group)
-    birth_place_hopital = Column("Hopital de zone", key="birth_place_hopital", rotate=True, group=birth_place_group)
-    birth_place_domicile = Column("Domicile", key="birth_place_domicile", rotate=True, group=birth_place_group)
-    birth_place_clinique_privee = Column("Clinique Privee", key="birth_place_clinique_privee", rotate=True, group=birth_place_group)
-    birth_place_autre = Column("Autre lieu", key="birth_place_autre", rotate=True, group=birth_place_group)
+    birth_place_mat_isolee = Column("Maternite Isolee", key="birth_place_mat_isolee",
+                                    rotate=True, group=birth_place_group)
+    birth_place_cs_arrondissement = Column("CS Arrondissement", key="birth_place_CS_arrondissement",
+                                           rotate=True, group=birth_place_group)
+    birth_place_cs_commune = Column("CS Commune", key="birth_place_CS_commune",
+                                    rotate=True, group=birth_place_group)
+    birth_place_hopital = Column("Hopital de zone", key="birth_place_hopital",
+                                 rotate=True, group=birth_place_group)
+    birth_place_domicile = Column("Domicile", key="birth_place_domicile",
+                                  rotate=True, group=birth_place_group)
+    birth_place_clinique_privee = Column("Clinique Privee", key="birth_place_clinique_privee",
+                                         rotate=True, group=birth_place_group)
+    birth_place_autre = Column("Autre lieu", key="birth_place_autre",
+                               rotate=True, group=birth_place_group)
 
-    referrals_open_30_days = Column(
-        "Referrals open for more than one month", key="referrals_open_30_days", rotate=True, startkey_fn=lambda x: [])
+    referrals_open_30_days = Column("Referrals open for more than one month", key="referrals_open_30_days",
+        rotate=True, startkey_fn=lambda x: [])
 
     #danger signs
     danger_sign_count_group = DataTablesColumnGroup("Danger sign counts")
-    danger_sign_count_pregnancy = Column("Pregnancy danger sign count",
-                                             key="danger_sign_count_pregnancy", rotate=True, group=danger_sign_count_group)
-    danger_sign_count_newborn = Column("Newborn danger sign count",
-                                           key="danger_sign_count_birth", rotate=True, group=danger_sign_count_group)
+    danger_sign_count_pregnancy = Column("Pregnancy danger sign count", key="danger_sign_count_pregnancy",
+                                         rotate=True, group=danger_sign_count_group)
+    danger_sign_count_newborn = Column("Newborn danger sign count", key="danger_sign_count_birth",
+                                       rotate=True, group=danger_sign_count_group)
 
     danger_sign_knowledge_group = DataTablesColumnGroup("Danger sign knowledge")
     danger_sign_knowledge_pregnancy = Column("Pregnancy danger sign knowledge",
@@ -261,10 +268,14 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
                                                      post_natal_followups_total_view)
 
         pnf_group = DataTablesColumnGroup("Post-natal followups")
-        post_natal_followups_15m = Column("15 min follow up", key=post_natal_followups_15m_view, rotate=True, group=pnf_group)
-        post_natal_followups_6h = Column("6 hour follow up", key=post_natal_followups_6h_view, rotate=True, group=pnf_group)
-        post_natal_followups_sortie = Column("Sortie follow up", key=post_natal_followups_sortie_view, rotate=True, group=pnf_group)
-        post_natal_followups_none = Column("No follow up", key=post_natal_followups_none_view, rotate=True, group=pnf_group)
+        post_natal_followups_15m = Column("15 min follow up", key=post_natal_followups_15m_view,
+                                          rotate=True, group=pnf_group)
+        post_natal_followups_6h = Column("6 hour follow up", key=post_natal_followups_6h_view,
+                                         rotate=True, group=pnf_group)
+        post_natal_followups_sortie = Column("Sortie follow up", key=post_natal_followups_sortie_view,
+                                             rotate=True, group=pnf_group)
+        post_natal_followups_none = Column("No follow up", key=post_natal_followups_none_view,
+                                           rotate=True, group=pnf_group)
 
         @property
         def start_and_end_keys(self):
@@ -330,19 +341,31 @@ class Referrals(BasicTabularReport, CustomProjectReport, ProjectReportParameters
                                                                referrals_total_view)
 
     referrals_transport_group = DataTablesColumnGroup("Referrals by mode of transport")
-    referrals_transport_pied = Column("Pied", key=referrals_transport_pied_view, rotate=True, group=referrals_transport_group)
-    referrals_transport_velo = Column("Velo", key=referrals_transport_velo_view, rotate=True, group=referrals_transport_group)
-    referrals_transport_barque_simple = Column("Barque simple", key=referrals_transport_barque_simple_view, rotate=True, group=referrals_transport_group)
-    referrals_transport_barque_ambulance= Column("Barque ambulance", key=referrals_transport_barque_ambulance_view, rotate=True, group=referrals_transport_group)
-    referrals_transport_vehicule_simple = Column("Vehicule simple", key=referrals_transport_vehicule_simple_view, rotate=True, group=referrals_transport_group)
-    referrals_transport_vehicule_ambulance = Column("Vehicule ambulance", key=referrals_transport_vehicule_ambulance_view, rotate=True, group=referrals_transport_group)
-    referrals_transport_moto_simple = Column("Moto simple", key=referrals_transport_moto_simple_view, rotate=True, group=referrals_transport_group)
-    referrals_transport_moto_ambulance = Column("Moto ambulance", key=referrals_transport_moto_ambulance_view, rotate=True, group=referrals_transport_group)
+    referrals_transport_pied = Column("Pied", key=referrals_transport_pied_view, rotate=True,
+                                      group=referrals_transport_group)
+    referrals_transport_velo = Column("Velo", key=referrals_transport_velo_view, rotate=True,
+                                      group=referrals_transport_group)
+    referrals_transport_barque_simple = Column("Barque simple", key=referrals_transport_barque_simple_view,
+                                               rotate=True, group=referrals_transport_group)
+    referrals_transport_barque_ambulance= Column("Barque ambulance", key=referrals_transport_barque_ambulance_view,
+                                                 rotate=True, group=referrals_transport_group)
+    referrals_transport_vehicule_simple = Column("Vehicule simple", key=referrals_transport_vehicule_simple_view,
+                                                 rotate=True, group=referrals_transport_group)
+    referrals_transport_vehicule_ambulance = Column("Vehicule ambulance",
+                                                    key=referrals_transport_vehicule_ambulance_view,
+                                                    rotate=True, group=referrals_transport_group)
+    referrals_transport_moto_simple = Column("Moto simple", key=referrals_transport_moto_simple_view,
+                                             rotate=True, group=referrals_transport_group)
+    referrals_transport_moto_ambulance = Column("Moto ambulance", key=referrals_transport_moto_ambulance_view,
+                                                rotate=True, group=referrals_transport_group)
 
     referrals_type_group = DataTablesColumnGroup("Referrals by patient type")
-    referrals_by_type_enceinte = Column("Enceinte", key="referral_per_type_enceinte", rotate=True, group=referrals_type_group)
-    referrals_by_type_accouchee = Column("Accouchee", key="referral_per_type_accouchee", rotate=True, group=referrals_type_group)
-    referrals_by_type_nouveau_ne = Column("Nouveau Ne", key="referral_per_type_nouveau_ne", rotate=True, group=referrals_type_group)
+    referrals_by_type_enceinte = Column("Enceinte", key="referral_per_type_enceinte",
+                                        rotate=True, group=referrals_type_group)
+    referrals_by_type_accouchee = Column("Accouchee", key="referral_per_type_accouchee",
+                                         rotate=True, group=referrals_type_group)
+    referrals_by_type_nouveau_ne = Column("Nouveau Ne", key="referral_per_type_nouveau_ne",
+                                          rotate=True, group=referrals_type_group)
 
     references_to_clinic_view = AggregateKeyView(combine_indicator,
                                                  KeyView(key="reference_to_clinic_went"),
