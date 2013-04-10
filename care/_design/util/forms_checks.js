@@ -45,8 +45,9 @@ function isRC_FermerLeDossier(doc) {
     return checkNs(doc, "http://openrosa.org/formdesigner/09149C06-4933-4EF9-ACC6-40A966D05FD7");
 }
 
+var ns_as_accouchement = "http://openrosa.org/formdesigner/EF3DF425-CCCB-4768-8C8E-9E8DB9692F07";
 function isAS_Accouchement(doc) {
-    return checkNs(doc, "http://openrosa.org/formdesigner/EF3DF425-CCCB-4768-8C8E-9E8DB9692F07");
+    return checkNs(doc, ns_as_accouchement);
 }
 
 function isAS_BilanDesAnalysesLabo(doc) {
@@ -97,16 +98,19 @@ function isAS_EnregistrementduNouveauNe(doc) {
     return checkNs(doc, "http://openrosa.org/formdesigner/A4FCED7D-DC8B-470E-8FC6-D30ADE4131DE");
 }
 
+var ns_as_surveillanceLorsDeLaSortieDuCS = "http://openrosa.org/formdesigner/fb01c7e9a965c32a6aa73bac222e4c79c8bae40";
 function isAS_SurveillanceLorsDeLaSortieDuCS(doc) {
-    return checkNs(doc, "http://openrosa.org/formdesigner/fb01c7e9a965c32a6aa73bac222e4c79c8bae40");
+    return checkNs(doc, ns_as_surveillanceLorsDeLaSortieDuCS);
 }
 
+var ns_as_surveillanceA15m = "http://openrosa.org/formdesigner/516AC5E5-0DC0-4CD9-96F8-6DAFCD11CA0F";
 function isAS_SurveillanceA15m(doc) {
-    return checkNs(doc, "http://openrosa.org/formdesigner/516AC5E5-0DC0-4CD9-96F8-6DAFCD11CA0F");
+    return checkNs(doc, ns_as_surveillanceA15m);
 }
 
+var ns_as_surveillanceA6h = "http://openrosa.org/formdesigner/B3BBEF61-866D-4663-B9B9-EF484FC56478";
 function isAS_SurveillanceA6h(doc) {
-    return checkNs(doc, "http://openrosa.org/formdesigner/B3BBEF61-866D-4663-B9B9-EF484FC56478");
+    return checkNs(doc, ns_as_surveillanceA6h);
 }
 
 function isAS_ReferenceAUnNiveauSuperieur(doc) {

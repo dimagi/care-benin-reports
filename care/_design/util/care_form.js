@@ -14,9 +14,9 @@ function CareForm(doc) {
             var ref = self.form.pas_de_contre_reference;
             if (ref && ref.es_tu_allee && ref.es_tu_allee === 'oui') {
                 self.village_data.reference_to_clinic_went = 1;
-                emit(['references_to_clinic_total', self.received_on], 1);
+                emit(['references_to_clinic_total'+self.form.condition_data_node, self.received_on], 1);
             } else if (self.form.satisfait) {
-                emit(['references_to_clinic_total', self.received_on], 1);
+                emit(['references_to_clinic_total'+self.form.condition_data_node, self.received_on], 1);
             }
         }
     }

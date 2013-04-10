@@ -62,6 +62,13 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
         'births_cpn4',
         'births_vat2',
         'births_tpi2',
+        'birth_place_mat_isolee',
+        'birth_place_cs_arrondissement',
+        'birth_place_cs_commune',
+        'birth_place_hopital',
+        'birth_place_domicile',
+        'birth_place_clinique_privee',
+        'birth_place_autre',
         'referrals_open_30_days',
         'births_one_month_ago_bcg_polio',
     )
@@ -119,18 +126,19 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
                                        KeyView(key="birth_one_month_ago_followup_x4+"),
                                        births_total_view)
 
+    births_one_month_ago_follow_up_group = DataTablesColumnGroup("Birth followup percentages")
     births_one_month_ago_follow_up_x0 = Column(
-        "Birth followups X0", key=births_view_x0, rotate=True)
+        "Birth followups X0", key=births_view_x0, rotate=True, group=births_one_month_ago_follow_up_group)
     births_one_month_ago_follow_up_x1 = Column(
-        "Birth followups X1", key=births_view_x1, rotate=True)
+        "Birth followups X1", key=births_view_x1, rotate=True, group=births_one_month_ago_follow_up_group)
     births_one_month_ago_follow_up_x2 = Column(
-        "Birth followups X2", key=births_view_x2, rotate=True)
+        "Birth followups X2", key=births_view_x2, rotate=True, group=births_one_month_ago_follow_up_group)
     births_one_month_ago_follow_up_x3 = Column(
-        "Birth followups X3", key=births_view_x3, rotate=True)
+        "Birth followups X3", key=births_view_x3, rotate=True, group=births_one_month_ago_follow_up_group)
     births_one_month_ago_follow_up_x4 = Column(
-        "Birth followups X4", key=births_view_x4, rotate=True)
+        "Birth followups X4", key=births_view_x4, rotate=True, group=births_one_month_ago_follow_up_group)
     births_one_month_ago_follow_up_gt4 = Column(
-        "Birth followups >4", key=births_view_gt4, rotate=True)
+        "Birth followups >4", key=births_view_gt4, rotate=True, group=births_one_month_ago_follow_up_group)
 
     pregnancy_followup = KeyView(key="pregnancy_followup")
 
@@ -147,10 +155,11 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
                                         KeyView(key='birth_cpn_4'),
                                         pregnancy_followup)
 
-    births_cpn0 = Column("Birth with CPN0", key=births_cpn0_view, rotate=True)
-    births_cpn1 = Column("Birth with CPN1", key=births_cpn1_view, rotate=True)
-    births_cpn2 = Column("Birth with CPN2", key=births_cpn2_view, rotate=True)
-    births_cpn4 = Column("Birth with CPN4", key=births_cpn4_view, rotate=True)
+    birth_cpn_group = DataTablesColumnGroup("Birth with CPN")
+    births_cpn0 = Column("Birth with CPN0", key=births_cpn0_view, rotate=True, group=birth_cpn_group)
+    births_cpn1 = Column("Birth with CPN1", key=births_cpn1_view, rotate=True, group=birth_cpn_group)
+    births_cpn2 = Column("Birth with CPN2", key=births_cpn2_view, rotate=True, group=birth_cpn_group)
+    births_cpn4 = Column("Birth with CPN4", key=births_cpn4_view, rotate=True, group=birth_cpn_group)
 
     births_vat2 = Column("Birth with VAT2", key="birth_vat_2", rotate=True)
     births_tpi2 = Column("Birth with TPI2", key="birth_tpi_2", rotate=True)
@@ -158,68 +167,35 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
     births_one_month_ago_bcg_polio = Column("Births 2 months ago that got BCG polio",
                                              key='births_one_month_ago_bcg_polio', rotate=True)
 
+    birth_place_group = DataTablesColumnGroup("Birth place")
+    birth_place_mat_isolee = Column("Maternite Isolee", key="birth_place_mat_isolee", rotate=True, group=birth_place_group)
+    birth_place_cs_arrondissement = Column("CS Arrondissement", key="birth_place_CS_arrondissement", rotate=True, group=birth_place_group)
+    birth_place_cs_commune = Column("CS Commune", key="birth_place_CS_commune", rotate=True, group=birth_place_group)
+    birth_place_hopital = Column("Hopital de zone", key="birth_place_hopital", rotate=True, group=birth_place_group)
+    birth_place_domicile = Column("Domicile", key="birth_place_domicile", rotate=True, group=birth_place_group)
+    birth_place_clinique_privee = Column("Clinique Privee", key="birth_place_clinique_privee", rotate=True, group=birth_place_group)
+    birth_place_autre = Column("Autre lieu", key="birth_place_autre", rotate=True, group=birth_place_group)
+
     referrals_open_30_days = Column(
         "Referrals open for more than one month", key="referrals_open_30_days", rotate=True, startkey_fn=lambda x: [])
 
     #danger signs
+    danger_sign_count_group = DataTablesColumnGroup("Danger sign counts")
     danger_sign_count_pregnancy = Column("Pregnancy danger sign count",
-                                             key="danger_sign_count_pregnancy", rotate=True)
+                                             key="danger_sign_count_pregnancy", rotate=True, group=danger_sign_count_group)
     danger_sign_count_newborn = Column("Newborn danger sign count",
-                                           key="danger_sign_count_birth", rotate=True)
+                                           key="danger_sign_count_birth", rotate=True, group=danger_sign_count_group)
 
+    danger_sign_knowledge_group = DataTablesColumnGroup("Danger sign knowledge")
     danger_sign_knowledge_pregnancy = Column("Pregnancy danger sign knowledge",
                                              key="danger_sign_knowledge_pregnancy", rotate=True,
-                                             startkey_fn=lambda x: [])
+                                             startkey_fn=lambda x: [], group=danger_sign_knowledge_group)
     danger_sign_knowledge_post_partum = Column("Post-partum danger sign knowledge",
                                                key="danger_sign_knowledge_post_partum", rotate=True,
-                                               startkey_fn=lambda x: [])
+                                               startkey_fn=lambda x: [], group=danger_sign_knowledge_group)
     danger_sign_knowledge_newborn = Column("Newborn danger sign knowledge",
                                            key="danger_sign_knowledge_newborn", rotate=True,
-                                           startkey_fn=lambda x: [])
-
-    @property
-    def headers(self):
-        birth_followups_group = DataTablesColumnGroup("Birth followup percentages",
-                                                      self.births_one_month_ago_follow_up_x0.data_tables_column,
-                                                      self.births_one_month_ago_follow_up_x1.data_tables_column,
-                                                      self.births_one_month_ago_follow_up_x2.data_tables_column,
-                                                      self.births_one_month_ago_follow_up_x3.data_tables_column,
-                                                      self.births_one_month_ago_follow_up_x4.data_tables_column,
-                                                      self.births_one_month_ago_follow_up_gt4.data_tables_column)
-
-        danger_sign_count_group = DataTablesColumnGroup("Danger sign counts",
-                                                   self.danger_sign_count_pregnancy.data_tables_column,
-                                                   self.danger_sign_count_newborn.data_tables_column)
-
-        danger_sign_knowledge_group = DataTablesColumnGroup("Danger sign knowledge",
-                                                   self.danger_sign_knowledge_pregnancy.data_tables_column,
-                                                   self.danger_sign_knowledge_post_partum.data_tables_column,
-                                                   self.danger_sign_knowledge_newborn.data_tables_column)
-
-        birth_cpn_group = DataTablesColumnGroup("Birth with CPN",
-                                                self.births_cpn0.data_tables_column,
-                                                self.births_cpn1.data_tables_column,
-                                                self.births_cpn2.data_tables_column,
-                                                self.births_cpn4.data_tables_column)
-
-        return DataTablesHeader(self.village.data_tables_column,
-                                self.newlyRegisteredPregnant.data_tables_column,
-                                self.pregnant_followed_up.data_tables_column,
-                                self.high_risk_pregnancy.data_tables_column,
-                                self.anemic_pregnancy.data_tables_column,
-                                self.stillborns.data_tables_column,
-                                self.failed_pregnancy.data_tables_column,
-                                self.maternal_death.data_tables_column,
-                                self.child_death_7_days.data_tables_column,
-                                self.postPartumRegistration.data_tables_column,
-                                birth_followups_group,
-                                birth_cpn_group,
-                                self.births_vat2.data_tables_column,
-                                self.births_tpi2.data_tables_column,
-                                self.births_one_month_ago_bcg_polio.data_tables_column,
-                                self.referrals_open_30_days.data_tables_column,
-                                danger_sign_knowledge_group,
-        )
+                                           startkey_fn=lambda x: [], group=danger_sign_knowledge_group)
 
     @property
     def start_and_end_keys(self):
@@ -252,6 +228,10 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
         default_column_order = (
             'nurse',
             'cpn_exam_rate',
+            'post_natal_followups_15m',
+            'post_natal_followups_6h',
+            'post_natal_followups_sortie',
+            'post_natal_followups_none',
         )
 
         nurse = Column(
@@ -265,6 +245,26 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
 
         cpn_exam_rate = Column(
             "CPN Exam Rate", key=cpn_exam_rate_view, rotate=True)
+
+        post_natal_followups_total_view = KeyView(key="post_natal_followups_total")
+        post_natal_followups_15m_view = AggregateKeyView(combine_indicator,
+                                                     KeyView(key="post_natal_followups_15m"),
+                                                     post_natal_followups_total_view)
+        post_natal_followups_6h_view = AggregateKeyView(combine_indicator,
+                                                     KeyView(key="post_natal_followups_6h"),
+                                                     post_natal_followups_total_view)
+        post_natal_followups_sortie_view = AggregateKeyView(combine_indicator,
+                                                     KeyView(key="post_natal_followups_sortie"),
+                                                     post_natal_followups_total_view)
+        post_natal_followups_none_view = AggregateKeyView(combine_indicator,
+                                                     KeyView(key="post_natal_followups_none"),
+                                                     post_natal_followups_total_view)
+
+        pnf_group = DataTablesColumnGroup("Post-natal followups")
+        post_natal_followups_15m = Column("15 min follow up", key=post_natal_followups_15m_view, rotate=True, group=pnf_group)
+        post_natal_followups_6h = Column("6 hour follow up", key=post_natal_followups_6h_view, rotate=True, group=pnf_group)
+        post_natal_followups_sortie = Column("Sortie follow up", key=post_natal_followups_sortie_view, rotate=True, group=pnf_group)
+        post_natal_followups_none = Column("No follow up", key=post_natal_followups_none_view, rotate=True, group=pnf_group)
 
         @property
         def start_and_end_keys(self):
@@ -282,9 +282,10 @@ class Referrals(BasicTabularReport, CustomProjectReport, ProjectReportParameters
     field_classes = (GroupField, DatespanField)
     datespan_default_days = 30
 
-    couch_view = "care/care_benin"
+    couch_view = "care/form"
 
     default_column_order = (
+        'village',
         'referrals_transport_pied',
         'referrals_transport_velo',
         'referrals_transport_barque_simple',
@@ -296,9 +297,12 @@ class Referrals(BasicTabularReport, CustomProjectReport, ProjectReportParameters
         'referrals_by_type_enceinte',
         'referrals_by_type_accouchee',
         'referrals_by_type_nouveau_ne',
+        'references_to_clinic',
     )
 
-    referrals_total_view = KeyView(key="referrals_total")
+    village = Column("Village", calculate_fn=lambda key, report: 'village')#groupname)
+
+    referrals_total_view = KeyView(key="referrals_transport_total")
 
     referrals_transport_pied_view = AggregateKeyView(combine_indicator,
                                                      KeyView(key="referrals_transport_pied"),
@@ -325,43 +329,26 @@ class Referrals(BasicTabularReport, CustomProjectReport, ProjectReportParameters
                                                                KeyView(key="referrals_transport_moto_ambulance"),
                                                                referrals_total_view)
 
-    referrals_transport_pied = Column("Pied", key=referrals_transport_pied_view, rotate=True)
-    referrals_transport_velo = Column("Velo", key=referrals_transport_velo_view, rotate=True)
-    referrals_transport_barque_simple = Column("Barque simple", key=referrals_transport_barque_simple_view, rotate=True)
-    referrals_transport_barque_ambulance= Column("Barque ambulance", key=referrals_transport_barque_ambulance_view, rotate=True)
-    referrals_transport_vehicule_simple = Column("Vehicule simple", key=referrals_transport_vehicule_simple_view, rotate=True)
-    referrals_transport_vehicule_ambulance = Column("Vehicule ambulance", key=referrals_transport_vehicule_ambulance_view, rotate=True)
-    referrals_transport_moto_simple = Column("Moto simple", key=referrals_transport_moto_simple_view, rotate=True)
-    referrals_transport_moto_ambulance = Column("Moto ambulance", key=referrals_transport_moto_ambulance_view, rotate=True)
+    referrals_transport_group = DataTablesColumnGroup("Referrals by mode of transport")
+    referrals_transport_pied = Column("Pied", key=referrals_transport_pied_view, rotate=True, group=referrals_transport_group)
+    referrals_transport_velo = Column("Velo", key=referrals_transport_velo_view, rotate=True, group=referrals_transport_group)
+    referrals_transport_barque_simple = Column("Barque simple", key=referrals_transport_barque_simple_view, rotate=True, group=referrals_transport_group)
+    referrals_transport_barque_ambulance= Column("Barque ambulance", key=referrals_transport_barque_ambulance_view, rotate=True, group=referrals_transport_group)
+    referrals_transport_vehicule_simple = Column("Vehicule simple", key=referrals_transport_vehicule_simple_view, rotate=True, group=referrals_transport_group)
+    referrals_transport_vehicule_ambulance = Column("Vehicule ambulance", key=referrals_transport_vehicule_ambulance_view, rotate=True, group=referrals_transport_group)
+    referrals_transport_moto_simple = Column("Moto simple", key=referrals_transport_moto_simple_view, rotate=True, group=referrals_transport_group)
+    referrals_transport_moto_ambulance = Column("Moto ambulance", key=referrals_transport_moto_ambulance_view, rotate=True, group=referrals_transport_group)
 
-    referrals_by_type_enceinte = Column("Enceinte", key="referral_per_type_enceinte", rotate=True)
-    referrals_by_type_accouchee = Column("Accouchee", key="referral_per_type_accouchee", rotate=True)
-    referrals_by_type_nouveau_ne = Column("Nouveau Ne", key="referral_per_type_nouveau_ne", rotate=True)
+    referrals_type_group = DataTablesColumnGroup("Referrals by patient type")
+    referrals_by_type_enceinte = Column("Enceinte", key="referral_per_type_enceinte", rotate=True, group=referrals_type_group)
+    referrals_by_type_accouchee = Column("Accouchee", key="referral_per_type_accouchee", rotate=True, group=referrals_type_group)
+    referrals_by_type_nouveau_ne = Column("Nouveau Ne", key="referral_per_type_nouveau_ne", rotate=True, group=referrals_type_group)
 
     references_to_clinic_view = AggregateKeyView(combine_indicator,
                                                  KeyView(key="reference_to_clinic_went"),
                                                  KeyView(key="references_to_clinic"))
-    references_to_clinic = Column("Rate of references that which went to clinic",
-                                  key=references_to_clinic_view,rotate=True)
-
-    @property
-    def headers(self):
-        referrals_transport_group = DataTablesColumnGroup(self.referrals_transport_pied.data_tables_column,
-                                                          self.referrals_transport_velo.data_tables_column,
-                                                          self.referrals_transport_barque_simple.data_tables_column,
-                                                          self.referrals_transport_barque_ambulance.data_tables_column,
-                                                          self.referrals_transport_vehicule_simple.data_tables_column,
-                                                          self.referrals_transport_vehicule_ambulance.data_tables_column,
-                                                          self.referrals_transport_moto_simple.data_tables_column,
-                                                          self.referrals_transport_moto_ambulance.data_tables_column,
-                                                          )
-
-        referrals_type_group = DataTablesColumnGroup(self.referrals_by_type_enceinte.data_tables_column,
-                                                     self.referrals_by_type_accouchee.data_tables_column,
-                                                     self.referrals_by_type_nouveau_ne.data_tables_column)
-        return DataTablesHeader(referrals_transport_group,
-                                referrals_type_group,
-                                self.references_to_clinic.data_tables_column)
+    references_to_clinic = Column("Rate of references which went to clinic",
+                                  key=references_to_clinic_view, rotate=True)
 
     @property
     def start_and_end_keys(self):
@@ -370,7 +357,7 @@ class Referrals(BasicTabularReport, CustomProjectReport, ProjectReportParameters
 
     @property
     def keys(self):
-        return ['village']
+        return [['village']]
         #for group in self.groups:
         #    yield [group._id]
 
@@ -393,10 +380,16 @@ class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParameter
     couch_view = "care/form"
 
     row_list = (
+        {"name": "Cases closed (enceinte)",
+            "view": KeyView(key="case_closed_enceinte", couch_view="care/care_benin")},
+        {"name": "Cases closed (accouchee)",
+            "view": KeyView(key="case_closed_accouchee", couch_view="care/care_benin")},
         {"name": "Numbre of births at clinic with GATPA performed",
             "view": KeyView(key="birth_gapta")},
-        {"name": "Total references to clinic",
-            "view": KeyView(key="references_to_clinic_total")},
+        {"name": "Total references to clinic (enceinte)",
+            "view": KeyView(key="references_to_clinic_total_enceinte")},
+        {"name": "Total references to clinic (accouchee)",
+            "view": KeyView(key="references_to_clinic_total_accouchee")},
     )
 
     @property

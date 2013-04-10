@@ -94,7 +94,7 @@ function CareCase(doc) {
 
     self.process_actions = function () {
         var actions = self.case.actions;
-//        var forms_completed ={};
+        var forms_completed ={};
         var update_count = 0;
         for (var i = 0, l = actions.length; i < l; i++) {
             var a = actions[i];
@@ -105,9 +105,7 @@ function CareCase(doc) {
                 update_count++;
             }
 
-//            if (isRC_Accouchement(a.xform_xmlns)) {
-//                forms_completed.rc_accouchement = true;
-//            }
+            forms_completed[a.xform_xmlns] = true;
 
             // first update
             if (update_count === 1) {
@@ -116,6 +114,19 @@ function CareCase(doc) {
                 } else if (properties.condition === 'accouchee') {
                     self.data_open.post_partum_registration = 1;
                 }
+            }
+        }
+
+        if (forms_completed[ns_as_accouchement] && self.case.DA) {
+            emit([self.owner_id, 'post_natal_followups_total', self.case.DA], 1);
+            if (forms_completed[ns_as_surveillanceLorsDeLaSortieDuCS]) {
+                emit([self.owner_id, 'post_natal_followups_sortie', self.case.DA], 1);
+            } else if (forms_completed[ns_as_surveillanceA6h]) {
+                emit([self.owner_id, 'post_natal_followups_6h', self.case.DA], 1);
+            } else if (forms_completed[ns_as_surveillanceA15m]) {
+                emit([self.owner_id, 'post_natal_followups_15m', self.case.DA], 1);
+            } else {
+                emit([self.owner_id, 'post_natal_followups_none', self.case.DA], 1);
             }
         }
     }
@@ -130,6 +141,10 @@ function CareCase(doc) {
 
             if (self.case.TPI2 === 'oui') {
                 emit([self.owner_id, 'birth_tpi_2', dob], 1);
+            }
+
+            if (self.case.lieu_acc) {
+                emit([self.owner_id, 'birth_place_'+self.case.lieu_acc, dob], 1);
             }
 
             var adjusted_date = adjust_date(dob.getTime(), 30);
