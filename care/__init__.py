@@ -2,7 +2,8 @@ import reports
 
 CUSTOM_REPORTS = (
     ('CARE Benin Reports', (
-        reports.MonitoringAndEvaluation,
+        reports.MEGeneral,
+        reports.MEMedical,
         reports.Nurse,
         reports.Outcomes,
         reports.DangerSigns,

@@ -5,11 +5,6 @@ function(doc) {
 
     if (isCAREWomanCase(doc)) {
         var cc = new CareCase(doc);
-        cc.general();
-        cc.check_birth();
-        cc.referrals();
-        cc.danger_signs();
-        cc.process_actions();
-        cc.emit_data();
+        cc.by_village();
     }
 }

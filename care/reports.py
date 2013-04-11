@@ -1,9 +1,11 @@
+# coding=utf-8
+
 from numbers import Number
 from corehq.apps.reports.basic import BasicTabularReport, Column, GenericTabularReport
 from corehq.apps.reports.datatables import DataTablesHeader, DataTablesColumnGroup, \
     DataTablesColumn, DTSortType, DTSortDirection
 from corehq.apps.reports.standard import ProjectReportParametersMixin, CustomProjectReport, DatespanMixin
-from corehq.apps.reports.fields import FilterUsersField, DatespanField, GroupField
+from corehq.apps.reports.fields import DatespanField
 from corehq.apps.groups.models import Group
 from couchdbkit_aggregate import KeyView, AggregateKeyView, fn
 from dimagi.utils.decorators.memoized import memoized
@@ -26,42 +28,49 @@ def combine_indicator(num, denom):
         return NO_VALUE
 
 
-class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
-    name = "CARE M&E"
-    slug = "cb_me"
+class CareGroupReport(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
     field_classes = (DatespanField,)
     datespan_default_days = 30
+    exportable = True
 
-    couch_view = "care/care_benin"
+    @property
+    def start_and_end_keys(self):
+        return ([self.datespan.startdate_param_utc],
+                [self.datespan.enddate_param_utc])
+
+    @property
+    def keys(self):
+        for group in self.groups:
+            yield [group._id]
+
+    @property
+    def groups(self):
+        return [g for g in Group.by_domain(self.domain) if not g.reporting]
+
+    @property
+    @memoized
+    def groupnames(self):
+        return dict([(group._id, group.name) for group in self.groups])
+
+
+class MeanHours(fn.mean):
+    def __call__(self, stats):
+        millis = super(MeanHours, self).__call__(stats, 0)
+        return millis / 60 * 60 * 1000 if isinstance(millis, Number) else millis
+
+
+class MEGeneral(CareGroupReport):
+    name = "M&E General"
+    slug = "cb_gen"
+    couch_view = "care/by_village_case"
 
     default_column_order = (
         'village',
-        'newlyRegisteredPregnant',
-        'postPartumRegistration',
-        'pregnant_followed_up',
-        'high_risk_pregnancy',
-        'anemic_pregnancy',
-        'stillborns',
-        'failed_pregnancy',
-        'maternal_death',
-        'child_death_7_days',
-        'births_one_month_ago_follow_up_x0',
-        'births_one_month_ago_follow_up_x1',
-        'births_one_month_ago_follow_up_x2',
-        'births_one_month_ago_follow_up_x3',
-        'births_one_month_ago_follow_up_x4',
-        'births_one_month_ago_follow_up_gt4',
-        'danger_sign_count_pregnancy',
-        'danger_sign_count_newborn',
+        'referrals_open_30_days',
+        'ref_counter_ref_time',
         'danger_sign_knowledge_pregnancy',
         'danger_sign_knowledge_post_partum',
         'danger_sign_knowledge_newborn',
-        'births_cpn0',
-        'births_cpn1',
-        'births_cpn2',
-        'births_cpn4',
-        'births_vat2',
-        'births_tpi2',
         'birth_place_mat_isolee',
         'birth_place_cs_arrondissement',
         'birth_place_cs_commune',
@@ -69,104 +78,15 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
         'birth_place_domicile',
         'birth_place_clinique_privee',
         'birth_place_autre',
-        'referrals_open_30_days',
-        'births_one_month_ago_bcg_polio',
     )
 
     village = Column(
         "Village", calculate_fn=groupname)
 
-    # pregnancy
-    newlyRegisteredPregnant = Column("Newly Registered Women who are Pregnant",
-                                     key="newly_registered_pregnant", rotate=True)
-
-    pregnant_followed_up = Column("Pregnant Women", key="pregnant_followed_up",
-                                  rotate=True, startkey_fn=lambda x: [], endkey_fn=lambda x: [{}])
-
-    high_risk_pregnancy = Column("High risk pregnancies", key="high_risk_pregnancy", rotate=True,
-                                 couch_view="care/form", startkey_fn=lambda x: [])
-    anemic_pregnancy = Column("Anemic pregnancies", key="anemic_pregnancy", rotate=True,
-                                 couch_view="care/form", startkey_fn=lambda x: [])
-
+    ref_counter_ref_time = Column("Mean time between reference and counter reference", key="ref_counter_ref_time",
+                                  rotate=True, reduce_fn=MeanHours())
 
     # birth
-    postPartumRegistration = Column(
-        "Post-partum mothers/newborn registrations", key="post_partum_registration", rotate=True)
-
-    stillborns = Column("Stillborns", key="stillborn", rotate=True,
-                        couch_view="care/form", startkey_fn=lambda x: [])
-
-    failed_pregnancy = Column("Failed pregnancies", key="pregnancy_failed", rotate=True,
-                        couch_view="care/form", startkey_fn=lambda x: [])
-
-    maternal_death = Column("Maternal deaths", key="maternal_death", rotate=True,
-                        couch_view="care/form", startkey_fn=lambda x: [])
-
-    child_death_7_days = Column("Babies died before 7 days", key="child_death_7_days", rotate=True,
-                        couch_view="care/form", startkey_fn=lambda x: [])
-
-    births_total_view = KeyView(key="births_one_month_ago")
-
-    births_view_x0 = AggregateKeyView(combine_indicator,
-                                      KeyView(key="birth_one_month_ago_followup_x0"),
-                                      births_total_view)
-    births_view_x1 = AggregateKeyView(combine_indicator,
-                                      KeyView(key="birth_one_month_ago_followup_x1"),
-                                      births_total_view)
-    births_view_x2 = AggregateKeyView(combine_indicator,
-                                      KeyView(key="birth_one_month_ago_followup_x2"),
-                                      births_total_view)
-    births_view_x3 = AggregateKeyView(combine_indicator,
-                                      KeyView(key="birth_one_month_ago_followup_x3"),
-                                      births_total_view)
-    births_view_x4 = AggregateKeyView(combine_indicator,
-                                      KeyView(key="birth_one_month_ago_followup_x4"),
-                                      births_total_view)
-    births_view_gt4 = AggregateKeyView(combine_indicator,
-                                       KeyView(key="birth_one_month_ago_followup_x4+"),
-                                       births_total_view)
-
-    births_one_month_ago_follow_up_group = DataTablesColumnGroup("Birth followup percentages")
-    births_one_month_ago_follow_up_x0 = Column(
-        "Birth followups X0", key=births_view_x0, rotate=True, group=births_one_month_ago_follow_up_group)
-    births_one_month_ago_follow_up_x1 = Column(
-        "Birth followups X1", key=births_view_x1, rotate=True, group=births_one_month_ago_follow_up_group)
-    births_one_month_ago_follow_up_x2 = Column(
-        "Birth followups X2", key=births_view_x2, rotate=True, group=births_one_month_ago_follow_up_group)
-    births_one_month_ago_follow_up_x3 = Column(
-        "Birth followups X3", key=births_view_x3, rotate=True, group=births_one_month_ago_follow_up_group)
-    births_one_month_ago_follow_up_x4 = Column(
-        "Birth followups X4", key=births_view_x4, rotate=True, group=births_one_month_ago_follow_up_group)
-    births_one_month_ago_follow_up_gt4 = Column(
-        "Birth followups >4", key=births_view_gt4, rotate=True, group=births_one_month_ago_follow_up_group)
-
-    pregnancy_followup = KeyView(key="pregnancy_followup")
-
-    births_cpn0_view = AggregateKeyView(combine_indicator,
-                                        KeyView(key='birth_cpn_0'),
-                                        pregnancy_followup)
-    births_cpn1_view = AggregateKeyView(combine_indicator,
-                                        KeyView(key='birth_cpn_1'),
-                                        pregnancy_followup)
-    births_cpn2_view = AggregateKeyView(combine_indicator,
-                                        KeyView(key='birth_cpn_2'),
-                                        pregnancy_followup)
-    births_cpn4_view = AggregateKeyView(combine_indicator,
-                                        KeyView(key='birth_cpn_4'),
-                                        pregnancy_followup)
-
-    birth_cpn_group = DataTablesColumnGroup("Birth with CPN")
-    births_cpn0 = Column("Birth with CPN0", key=births_cpn0_view, rotate=True, group=birth_cpn_group)
-    births_cpn1 = Column("Birth with CPN1", key=births_cpn1_view, rotate=True, group=birth_cpn_group)
-    births_cpn2 = Column("Birth with CPN2", key=births_cpn2_view, rotate=True, group=birth_cpn_group)
-    births_cpn4 = Column("Birth with CPN4", key=births_cpn4_view, rotate=True, group=birth_cpn_group)
-
-    births_vat2 = Column("Birth with VAT2", key="birth_vat_2", rotate=True)
-    births_tpi2 = Column("Birth with TPI2", key="birth_tpi_2", rotate=True)
-
-    births_one_month_ago_bcg_polio = Column("Births 2 months ago that got BCG polio",
-                                             key='births_one_month_ago_bcg_polio', rotate=True)
-
     birth_place_group = DataTablesColumnGroup("Birth place")
     birth_place_mat_isolee = Column("Maternite Isolee", key="birth_place_mat_isolee",
                                     rotate=True, group=birth_place_group)
@@ -187,12 +107,6 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
         rotate=True, startkey_fn=lambda x: [])
 
     #danger signs
-    danger_sign_count_group = DataTablesColumnGroup("Danger sign counts")
-    danger_sign_count_pregnancy = Column("Pregnancy danger sign count", key="danger_sign_count_pregnancy",
-                                         rotate=True, group=danger_sign_count_group)
-    danger_sign_count_newborn = Column("Newborn danger sign count", key="danger_sign_count_birth",
-                                       rotate=True, group=danger_sign_count_group)
-
     danger_sign_knowledge_group = DataTablesColumnGroup("Danger sign knowledge")
     danger_sign_knowledge_pregnancy = Column("Pregnancy danger sign knowledge",
                                              key="danger_sign_knowledge_pregnancy", rotate=True,
@@ -204,41 +118,156 @@ class MonitoringAndEvaluation(BasicTabularReport, CustomProjectReport, ProjectRe
                                            key="danger_sign_knowledge_newborn", rotate=True,
                                            startkey_fn=lambda x: [], group=danger_sign_knowledge_group)
 
-    @property
-    def start_and_end_keys(self):
-        return ([self.datespan.startdate_param_utc],
-                [self.datespan.enddate_param_utc])
 
-    @property
-    def keys(self):
-        for group in self.groups:
-            yield [group._id]
+class MEMedical(CareGroupReport):
+    name = "M&E Medical"
+    slug = "cb_med"
 
-    @property
-    def groups(self):
-        return [g for g in Group.by_domain(self.domain) if g.name.strip()]
+    couch_view = "care/by_village_case"
 
-    @property
-    @memoized
-    def groupnames(self):
-        return dict([(group._id, group.name) for group in self.groups])
+    default_column_order = (
+        'village',
+        'newlyRegisteredPregnant',
+        'postPartumRegistration',
+        'pregnant_followed_up',
+        #'high_risk_pregnancy', #requires village in form
+        #'anemic_pregnancy', #requires village in form
+        #'stillborns', #requires village in form
+        #'failed_pregnancy', #requires village in form
+        #'maternal_death', #requires village in form
+        #'child_death_7_days', #requires village in form
+        'births_one_month_ago_bcg_polio',
+        'births_vat2',
+        'births_tpi2',
+        'births_one_month_ago_follow_up_x0',
+        'births_one_month_ago_follow_up_x1',
+        'births_one_month_ago_follow_up_x2',
+        'births_one_month_ago_follow_up_x3',
+        'births_one_month_ago_follow_up_x4',
+        'births_one_month_ago_follow_up_gt4',
+        #'danger_sign_count_pregnancy', #requires village in form
+        #'danger_sign_count_newborn', #requires village in form
+        'births_cpn0',
+        'births_cpn1',
+        'births_cpn2',
+        'births_cpn4',
+    )
 
+    village = Column(
+        "Village", calculate_fn=groupname)
+
+    # pregnancy
+    newlyRegisteredPregnant = Column("Newly Registered Women who are Pregnant",
+                                     key="newly_registered_pregnant", rotate=True)
+
+    pregnant_followed_up = Column("Pregnant women followed up on", key="pregnant_followed_up",
+                                  rotate=True, startkey_fn=lambda x: [], endkey_fn=lambda x: [{}])
+
+    high_risk_pregnancy = Column("High risk pregnancies", key="high_risk_pregnancy", rotate=True,
+                                 couch_view="care/by_village_form", startkey_fn=lambda x: [])
+    anemic_pregnancy = Column("Anemic pregnancies", key="anemic_pregnancy", rotate=True,
+                                 couch_view="care/by_village_form", startkey_fn=lambda x: [])
+
+    # birth
+    postPartumRegistration = Column(
+        "Post-partum mothers/newborn registrations", key="post_partum_registration", rotate=True)
+
+    stillborns = Column("Stillborns", key="stillborn", rotate=True,
+                        couch_view="care/by_village_form", startkey_fn=lambda x: [])
+
+    failed_pregnancy = Column("Failed pregnancies", key="pregnancy_failed", rotate=True,
+                        couch_view="care/by_village_form", startkey_fn=lambda x: [])
+
+    maternal_death = Column("Maternal deaths", key="maternal_death", rotate=True,
+                        couch_view="care/by_village_form", startkey_fn=lambda x: [])
+
+    child_death_7_days = Column("Babies died before 7 days", key="child_death_7_days", rotate=True,
+                        couch_view="care/by_village_form", startkey_fn=lambda x: [])
+
+    births_total_view = KeyView(key="birth_one_month_ago")
+
+    births_view_x0 = AggregateKeyView(combine_indicator,
+                                      KeyView(key="birth_one_month_ago_followup_x0"),
+                                      births_total_view)
+    births_view_x1 = AggregateKeyView(combine_indicator,
+                                      KeyView(key="birth_one_month_ago_followup_x1"),
+                                      births_total_view)
+    births_view_x2 = AggregateKeyView(combine_indicator,
+                                      KeyView(key="birth_one_month_ago_followup_x2"),
+                                      births_total_view)
+    births_view_x3 = AggregateKeyView(combine_indicator,
+                                      KeyView(key="birth_one_month_ago_followup_x3"),
+                                      births_total_view)
+    births_view_x4 = AggregateKeyView(combine_indicator,
+                                      KeyView(key="birth_one_month_ago_followup_x4"),
+                                      births_total_view)
+    births_view_gt4 = AggregateKeyView(combine_indicator,
+                                       KeyView(key="birth_one_month_ago_followup_gt4"),
+                                       births_total_view)
+
+    births_one_month_ago_follow_up_group = DataTablesColumnGroup("Birth followup percentages")
+    births_one_month_ago_follow_up_x0 = Column(
+        "Birth followups X0", key=births_view_x0, rotate=True, group=births_one_month_ago_follow_up_group)
+    births_one_month_ago_follow_up_x1 = Column(
+        "Birth followups X1", key=births_view_x1, rotate=True, group=births_one_month_ago_follow_up_group)
+    births_one_month_ago_follow_up_x2 = Column(
+        "Birth followups X2", key=births_view_x2, rotate=True, group=births_one_month_ago_follow_up_group)
+    births_one_month_ago_follow_up_x3 = Column(
+        "Birth followups X3", key=births_view_x3, rotate=True, group=births_one_month_ago_follow_up_group)
+    births_one_month_ago_follow_up_x4 = Column(
+        "Birth followups X4", key=births_view_x4, rotate=True, group=births_one_month_ago_follow_up_group)
+    births_one_month_ago_follow_up_gt4 = Column(
+        "Birth followups >4", key=births_view_gt4, rotate=True, group=births_one_month_ago_follow_up_group)
+
+    birth_cpn_total = KeyView(key="birth_cpn_total")
+
+    births_cpn0_view = AggregateKeyView(combine_indicator,
+                                        KeyView(key='birth_cpn_0'),
+                                        birth_cpn_total)
+    births_cpn1_view = AggregateKeyView(combine_indicator,
+                                        KeyView(key='birth_cpn_1'),
+                                        birth_cpn_total)
+    births_cpn2_view = AggregateKeyView(combine_indicator,
+                                        KeyView(key='birth_cpn_2'),
+                                        birth_cpn_total)
+    births_cpn4_view = AggregateKeyView(combine_indicator,
+                                        KeyView(key='birth_cpn_4'),
+                                        birth_cpn_total)
+
+    birth_cpn_group = DataTablesColumnGroup("Birth with CPN")
+    births_cpn0 = Column("Birth with CPN0", key=births_cpn0_view, rotate=True, group=birth_cpn_group)
+    births_cpn1 = Column("Birth with CPN1", key=births_cpn1_view, rotate=True, group=birth_cpn_group)
+    births_cpn2 = Column("Birth with CPN2", key=births_cpn2_view, rotate=True, group=birth_cpn_group)
+    births_cpn4 = Column("Birth with CPN4", key=births_cpn4_view, rotate=True, group=birth_cpn_group)
+
+    births_vat2 = Column("Birth with VAT2", key="birth_vat_2", rotate=True)
+    births_tpi2 = Column("Birth with TPI2", key="birth_tpi_2", rotate=True)
+
+    births_one_month_ago_bcg_polio = Column("Births 2 months ago that got BCG polio",
+                                             key='birth_one_month_ago_bcg_polio', rotate=True)
+
+    #danger signs
+    danger_sign_count_group = DataTablesColumnGroup("Danger sign counts")
+    danger_sign_count_pregnancy = Column("Pregnancy danger sign count", key="danger_sign_count_pregnancy",
+                                         rotate=True, group=danger_sign_count_group)
+    danger_sign_count_newborn = Column("Newborn danger sign count", key="danger_sign_count_birth",
+                                       rotate=True, group=danger_sign_count_group)
 
 class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
-        name = "Relais"
+        name = "Nurse"
         slug = "cb_nurse"
-        field_classes = (GroupField, DatespanField)
+        field_classes = (DatespanField,)
         datespan_default_days = 30
 
-        couch_view = "care/form"
+        couch_view = "care/by_user_form"
 
         default_column_order = (
             'nurse',
             'cpn_exam_rate',
-            'post_natal_followups_15m',
-            'post_natal_followups_6h',
-            'post_natal_followups_sortie',
-            'post_natal_followups_none',
+            'post_natal_followups_15m', #requires xform_xmlns in case actions
+            'post_natal_followups_6h', #requires xform_xmlns in case actions
+            'post_natal_followups_sortie', #requires xform_xmlns in case actions
+            'post_natal_followups_none', #requires xform_xmlns in case actions
         )
 
         nurse = Column(
@@ -287,16 +316,16 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
             for user in self.users:
                 yield [user['user_id']]
 
-class Referrals(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
+class Referrals(CareGroupReport):
     name = "Referrals"
     slug = "cb_referrals"
-    field_classes = (GroupField, DatespanField)
-    datespan_default_days = 30
 
-    couch_view = "care/form"
+    couch_view = "care/by_village_form"
 
+    # NOTE: all require village to be loaded into the forms
     default_column_order = (
         'village',
+        'references_to_clinic',
         'referrals_transport_pied',
         'referrals_transport_velo',
         'referrals_transport_barque_simple',
@@ -308,10 +337,9 @@ class Referrals(BasicTabularReport, CustomProjectReport, ProjectReportParameters
         'referrals_by_type_enceinte',
         'referrals_by_type_accouchee',
         'referrals_by_type_nouveau_ne',
-        'references_to_clinic',
     )
 
-    village = Column("Village", calculate_fn=lambda key, report: 'village')#groupname)
+    village = Column("Village", calculate_fn=lambda key, report: 'Total')#groupname)
 
     referrals_total_view = KeyView(key="referrals_transport_total")
 
@@ -374,25 +402,8 @@ class Referrals(BasicTabularReport, CustomProjectReport, ProjectReportParameters
                                   key=references_to_clinic_view, rotate=True)
 
     @property
-    def start_and_end_keys(self):
-        return ([self.datespan.startdate_param_utc],
-                [self.datespan.enddate_param_utc])
-
-    @property
     def keys(self):
         return [['village']]
-        #for group in self.groups:
-        #    yield [group._id]
-
-    @property
-    def groups(self):
-        return [g for g in Group.by_domain(self.domain) if g.name.strip()]
-
-    @property
-    @memoized
-    def groupnames(self):
-        return dict([(group._id, group.name) for group in self.groups])
-
 
 class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
     name = "Outcomes"
@@ -400,13 +411,13 @@ class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParameter
     fields = ('corehq.apps.reports.fields.DatespanField',)
     datespan_default_days = 30
 
-    couch_view = "care/form"
+    couch_view = "care/outcomes"
 
     row_list = (
         {"name": "Cases closed (enceinte)",
-            "view": KeyView(key="case_closed_enceinte", couch_view="care/care_benin")},
+            "view": KeyView(key="case_closed_enceinte")},
         {"name": "Cases closed (accouchee)",
-            "view": KeyView(key="case_closed_accouchee", couch_view="care/care_benin")},
+            "view": KeyView(key="case_closed_accouchee")},
         {"name": "Numbre of births at clinic with GATPA performed",
             "view": KeyView(key="birth_gapta")},
         {"name": "Total references to clinic (enceinte)",
@@ -433,8 +444,9 @@ class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParameter
             yield [row["name"], row["view"].get_value([], startkey=startkey, endkey=endkey,
                                                           couch_view=self.couch_view, db=db)]
 
+
 class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
-    name = "Danger Signs"
+    name = "Danger sign distribution"
     slug = "cb_danger"
     fields = ('corehq.apps.reports.fields.DatespanField',)
     datespan_default_days = 30
@@ -446,9 +458,9 @@ class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParame
 
     @property
     def keys(self):
-        return [row['key'][1] for row in get_db().view("care/form",
-                                                       startkey=['danger_sign'],
-                                                       endkey=['danger_sign', {}],
+        return [row['key'][1] for row in get_db().view("care/danger_signs",
+                                                       #startkey=['danger_sign'],
+                                                       #endkey=['danger_sign', {}],
                                                        reduce=True, group=True, group_level=2)]
 
     @property
@@ -462,7 +474,7 @@ class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParame
         startkey, endkey = self.start_and_end_keys
 
         for key in self.keys:
-            row = get_db().view("care/form",
+            row = get_db().view("care/danger_signs",
                                 startkey=['danger_sign', key, startkey],
                                 endkey=['danger_sign', key, endkey, {}],
                                 reduce=True,
@@ -471,4 +483,3 @@ class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParame
 
             row = row.first()
             yield [key, reduce_fn(row)]
-

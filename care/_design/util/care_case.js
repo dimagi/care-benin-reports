@@ -5,6 +5,18 @@ function CareCase(doc) {
     self.status = doc.condition;
     self.owner_id = doc.owner_id;
     self.data_open = {};
+    self.data_dob = {};
+
+    self.by_village = function () {
+        self.general();
+        self.check_birth();
+        self.referrals();
+        self.danger_signs();
+        self.process_actions();
+
+        emit_array([self.owner_id], [self.opened_on_date], self.data_open);
+        emit_array([self.owner_id], [self.case.DA], self.data_dob);
+    }
 
     self.general = function () {
         if (self.status === 'enceinte') {
@@ -13,33 +25,31 @@ function CareCase(doc) {
             }
         } else if (self.status === 'accouchee') {
             if (self.case.suivi_count_enc && self.case.suivi_count_enc > 0) {
-                self.data_open.pregnancy_followup = 1;
+                self.data_open.birth_cpn_total = 1;
 
                 if (self.case.CPN4 === 'oui') {
-                    emit([self.owner_id, 'birth_cpn_4', self.case.DA], 1);
+                    self.data_dob.birth_cpn_4 = 1;
                 } else if (self.case.CPN2 === 'oui') {
-                    emit([self.owner_id, 'birth_cpn_2', self.case.DA], 1);
+                    self.data_dob.birth_cpn_2 = 1;
                 } else if (self.case.CPN1 = 'oui') {
-                    emit([self.owner_id, 'birth_cpn_1', self.case.DA], 1);
+                    self.data_dob.birth_cpn_1 = 1;
                 } else if (count_matching_props(self.case, ['CPN1','CPN2','CPN3','CPN4'], 'non') === 4) {
-                    emit([self.owner_id, 'birth_cpn_0', self.case.DA], 1);
+                    self.data_dob.birth_cpn_0 = 1;
                 }
             }
         }
+    }
 
+    self.outcomes = function () {
         if (self.case.closed) {
             emit(['case_closed_'+self.status, new Date(self.case.closed_on)], 1)
         }
     }
 
     self.referrals = function () {
-        if (self.case.RC_nne_referee_quand) {
+        if (self.case.RC_reference_ouverte === 'oui') {
             _emit_referral(self.case.RC_nne_referee_quand);
-        }
-        if (self.case.RC_acc_referee_quand) {
             _emit_referral(self.case.RC_acc_referee_quand);
-        }
-        if (self.case.RC_enc_referee_quand) {
             _emit_referral(self.case.RC_enc_referee_quand);
         }
     }
@@ -105,7 +115,7 @@ function CareCase(doc) {
                 update_count++;
             }
 
-            forms_completed[a.xform_xmlns] = true;
+            forms_completed[a.xform_xmlns] = new Date(a.date);
 
             // first update
             if (update_count === 1) {
@@ -118,15 +128,32 @@ function CareCase(doc) {
         }
 
         if (forms_completed[ns_as_accouchement] && self.case.DA) {
-            emit([self.owner_id, 'post_natal_followups_total', self.case.DA], 1);
+            self.data_dob.post_natal_followups_total = 1;
             if (forms_completed[ns_as_surveillanceLorsDeLaSortieDuCS]) {
-                emit([self.owner_id, 'post_natal_followups_sortie', self.case.DA], 1);
+                self.data_dob.post_natal_followups_sortie = 1;
             } else if (forms_completed[ns_as_surveillanceA6h]) {
-                emit([self.owner_id, 'post_natal_followups_6h', self.case.DA], 1);
+                self.data_dob.post_natal_followups_6h = 1;
             } else if (forms_completed[ns_as_surveillanceA15m]) {
-                emit([self.owner_id, 'post_natal_followups_15m', self.case.DA], 1);
+                self.data_dob.post_natal_followups_15m = 1;
             } else {
-                emit([self.owner_id, 'post_natal_followups_none', self.case.DA], 1);
+                self.data_dob.post_natal_followups_none = 1;
+            }
+        }
+
+        if (forms_completed[ns_rc_reference]) {
+            var min = forms_completed[ns_as_contre_reference_dune_accouche];
+            var f2 = forms_completed[ns_as_contre_reference_dune_femme_enceinte];
+            var f3 = forms_completed[ns_as_contre_reference_dune_nouveau_ne];
+            if (f2 && (!min || f2 < min)) {
+                min = f2;
+            }
+            if (f3 && (!min || f3 < min)) {
+                min = f3;
+            }
+
+            if (min) {
+                var val = min.getTime() - forms_completed[ns_rc_reference].getTime();
+                emit([self.owner_id, 'ref_counter_ref_time', min], val)
             }
         }
     }
@@ -134,60 +161,61 @@ function CareCase(doc) {
     self.check_birth = function () {
         // assume presence of DA means birth
         if (self.case.DA) {
-            var dob = new Date(self.case.DA);
             if (self.case.VAT2 === 'oui') {
-                emit([self.owner_id, 'birth_vat_2', dob], 1);
+                self.data_dob.birth_vat_2 = 1;
             }
 
             if (self.case.TPI2 === 'oui') {
-                emit([self.owner_id, 'birth_tpi_2', dob], 1);
+                self.data_dob.birth_tpi_2 = 1;
             }
 
             if (self.case.lieu_acc) {
-                emit([self.owner_id, 'birth_place_'+self.case.lieu_acc, dob], 1);
+                self.data_dob['birth_place_'+self.case.lieu_acc] = 1;
             }
 
-            var adjusted_date = adjust_date(dob.getTime(), 30);
-            emit([self.owner_id, 'births_one_month_ago', adjusted_date], 1);
+            var data_dob_adj = {};
+            var adjusted_date = adjust_date(new Date(self.case.DA).getTime(), 30);
+            data_dob_adj.birth_one_month_ago = 1;
 
             if (self.case.BCG_et_polio === 'oui') {
-                emit([self.owner_id, 'births_one_month_ago_bcg_polio', adjusted_date], 1);
+                data_dob_adj.birth_one_month_ago_bcg_polio = 1;
             }
 
             // follow ups
-            if (self.case.suivi_count_nne !== undefined){
-                switch (+self.case.suivi_count_nne) {
+            var scn = parseInt(self.case.suivi_count_nne);
+            if (!isNaN(scn)){
+                switch (scn) {
                     case 0:
-                        emit([self.owner_id, 'birth_one_month_ago_followup_x0', adjusted_date], 1)
+                        data_dob_adj.birth_one_month_ago_followup_x0 = 1;
                         break;
                     case 1:
-                        emit([self.owner_id, 'birth_one_month_ago_followup_x1', adjusted_date], 1);
+                        data_dob_adj.birth_one_month_ago_followup_x1 = 1;
                         break;
                     case 2:
-                        emit([self.owner_id, 'birth_one_month_ago_followup_x2', adjusted_date], 1);
+                        data_dob_adj.birth_one_month_ago_followup_x2 = 1;
                         break;
                     case 3:
-                        emit([self.owner_id, 'birth_one_month_ago_followup_x3', adjusted_date], 1);
+                        data_dob_adj.birth_one_month_ago_followup_x3 = 1;
                         break;
                     case 4:
-                        emit([self.owner_id, 'birth_one_month_ago_followup_x4', adjusted_date], 1);
+                        data_dob_adj.birth_one_month_ago_followup_x4 = 1;
                         break;
                     default:
-                        emit([self.owner_id, 'birth_one_month_ago_followup_x4+', adjusted_date], 1);
+                        data_dob_adj.birth_one_month_ago_followup_gt4 = 1;
                 }
             } else {
-                emit([self.owner_id, 'birth_one_month_ago_followup_x0', adjusted_date], 1)
+                data_dob_adj.birth_one_month_ago_followup_x0 = 1;
             }
+
+            emit_array([self.owner_id], [adjusted_date], data_dob_adj);
         }
     }
 
-    self.emit_data = function () {
-        emit_array([self.owner_id], [self.opened_on_date], self.data_open);
-    }
-
-    function _emit_referral(date) {
-        var adjusted_date = adjust_date(new Date(date).getTime(), 30);
-        emit([self.owner_id, 'referrals_open_30_days', adjusted_date], 1);
+    function _emit_referral(date_str) {
+        if (date_str.trim()) {
+            var adjusted_date = adjust_date(new Date(date_str).getTime(), 30);
+            emit([self.owner_id, 'referrals_open_30_days', adjusted_date], 1);
+        }
     }
 
     function count_matching_props(object, keys, value) {

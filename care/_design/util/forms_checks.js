@@ -33,12 +33,14 @@ function isRC_SuiviDeAccouchee(doc) {
     return checkNs(doc, "http://openrosa.org/formdesigner/9D6BFE31-1613-4D10-8772-1AC3C6979004");
 }
 
+var ns_rc_reference = "http://openrosa.org/formdesigner/B1E6BBC1-ACD3-408B-B3AB-783153063D56";
 function isRC_Reference(doc) {
-    return checkNs(doc, "http://openrosa.org/formdesigner/B1E6BBC1-ACD3-408B-B3AB-783153063D56");
+    return checkNs(doc, ns_rc_reference);
 }
 
+var ns_rc_suivi_de_reference = "http://openrosa.org/formdesigner/A2EEC8AA-4761-4C68-BCFF-B6C0287DAA51";
 function isRC_SuiviDeReference(doc) {
-    return checkNs(doc, "http://openrosa.org/formdesigner/A2EEC8AA-4761-4C68-BCFF-B6C0287DAA51");
+    return checkNs(doc, ns_rc_suivi_de_reference);
 }
 
 function isRC_FermerLeDossier(doc) {
@@ -74,16 +76,19 @@ function isAS_CompleterEnregistrement(doc) {
     return checkNs(doc, "http://openrosa.org/formdesigner/EBAECEBF-E225-4464-BCC0-340E229C28AD");
 }
 
+var ns_as_contre_reference_dune_nouveau_ne = "http://openrosa.org/formdesigner/2f1d76d4d0fcec7b474239f5f209f705736d3bb0";
 function isAS_ContreReferenceDunNouveauNe(doc) {
-    return checkNs(doc, "http://openrosa.org/formdesigner/2f1d76d4d0fcec7b474239f5f209f705736d3bb0");
+    return checkNs(doc, ns_as_contre_reference_dune_nouveau_ne);
 }
 
+var ns_as_contre_reference_dune_accouche = "http://openrosa.org/formdesigner/6581d0a691eef1d0ba97b9a41bd1fa9ebace5d23";
 function isAS_ContreReferenceDuneAccouche(doc) {
-    return checkNs(doc, "http://openrosa.org/formdesigner/6581d0a691eef1d0ba97b9a41bd1fa9ebace5d23");
+    return checkNs(doc, ns_as_contre_reference_dune_accouche);
 }
 
+var ns_as_contre_reference_dune_femme_enceinte = "http://openrosa.org/formdesigner/10c78d5a567b53fc504dc1e6a4bdede14bf12040";
 function isAS_ContreReferenceDuneFemmeEnceinte(doc) {
-    return checkNs(doc, "http://openrosa.org/formdesigner/10c78d5a567b53fc504dc1e6a4bdede14bf12040");
+    return checkNs(doc, ns_as_contre_reference_dune_femme_enceinte);
 }
 
 function isAS_EnregistrementDeBase(doc) {
