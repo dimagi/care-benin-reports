@@ -18,7 +18,7 @@ function CareForm(doc) {
         self.danger_signs(true);
 
         // TODO: get village
-        emit_array(['village'], [self.received_on], self.village_data);
+        emit_array(['village'], [normalizeDate(self.received_on)], self.village_data);
     }
 
     self.by_user = function() {
@@ -40,7 +40,7 @@ function CareForm(doc) {
             self.user_data.cpn_exam_answered = non_blank;
         }
 
-        emit_array([self.form.meta.userID], [self.received_on], self.user_data);
+        emit_array([self.form.meta.userID], [normalizeDate(self.received_on)], self.user_data);
     }
 
     self.outcomes = function () {
@@ -60,7 +60,7 @@ function CareForm(doc) {
             }
         }
 
-        emit_array([], [self.received_on], self.outcome_data);
+        emit_array([], [normalizeDate(self.received_on)], self.outcome_data);
     }
 
     self.danger_signs = function (by_village) {
@@ -168,7 +168,7 @@ function CareForm(doc) {
                 if (by_village) {
                     self.village_data[key] = 1;
                 } else {
-                    emit(['danger_sign', s, self.received_on], 1);
+                    emit(['danger_sign', s, normalizeDate(self.received_on)], 1);
                 }
             }
         }

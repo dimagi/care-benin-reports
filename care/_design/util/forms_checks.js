@@ -1,3 +1,28 @@
+function dateBreakdown(dateString, breakdown) {
+    var date = new Date(dateString);
+    var ret = new Array();
+    for (i in breakdown) {
+        var elem = breakdown[i];
+        if (elem === 'y') {
+            ret.push(date.getUTCFullYear());
+        } else if (elem === 'm') {
+            ret.push(date.getUTCMonth());
+        } else if (elem === 'd') {
+            ret.push(date.getUTCDay());
+        }
+    }
+    return ret;
+}
+
+function normalizeDate(date) {
+    var d = date;
+    if (typeof date === 'string'){
+        d = new Date(date);
+    }
+    d.setUTCHours(12,0,0,0);
+    return d;
+}
+
 function isCAREForm(doc) {
     return (doc.doc_type === 'XFormInstance'
         && doc.domain === 'project'
@@ -10,7 +35,13 @@ function isCARECase(doc) {
 }
 
 function isCAREWomanCase(doc) {
-    return (isCARECase(doc) && doc.type === 'Woman');
+    // TODO: remove date constraint after QA
+    if (isCARECase(doc) && doc.type === 'Woman') {
+        var op = new Date(doc.opened_on);
+        var min = new Date(2013,1,1,0,0,0,0);
+        var max = new Date(2013,2,1,0,0,0,0)
+        return min <= op && op <= max;
+    }
 }
 
 function isRC_Enregistrement(doc) {

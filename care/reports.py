@@ -258,12 +258,14 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
         slug = "cb_nurse"
         field_classes = (DatespanField,)
         datespan_default_days = 30
+        exportable = True
 
         couch_view = "care/by_user_form"
 
         default_column_order = (
             'nurse',
             'cpn_exam_rate',
+            'ref_suiviref_time',
             'post_natal_followups_15m', #requires xform_xmlns in case actions
             'post_natal_followups_6h', #requires xform_xmlns in case actions
             'post_natal_followups_sortie', #requires xform_xmlns in case actions
@@ -281,6 +283,9 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
 
         cpn_exam_rate = Column(
             "CPN Exam Rate", key=cpn_exam_rate_view, rotate=True)
+
+        ref_suiviref_time = Column("Mean time between referral and suivi de referral",
+                                   key="ref_suiviref_time", rotate=True, reduce_fn=MeanHours())
 
         post_natal_followups_total_view = KeyView(key="post_natal_followups_total")
         post_natal_followups_15m_view = AggregateKeyView(combine_indicator,
@@ -410,6 +415,7 @@ class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParameter
     slug = "cb_outcomes"
     fields = ('corehq.apps.reports.fields.DatespanField',)
     datespan_default_days = 30
+    exportable = True
 
     couch_view = "care/outcomes"
 
@@ -450,6 +456,7 @@ class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParame
     slug = "cb_danger"
     fields = ('corehq.apps.reports.fields.DatespanField',)
     datespan_default_days = 30
+    exportable = True
 
     @property
     def start_and_end_keys(self):

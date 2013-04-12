@@ -1,7 +1,7 @@
 function CareCase(doc) {
     var self = this;
     self.case = doc;
-    self.opened_on_date = new Date(self.case.opened_on);
+    self.opened_on_date = self.case.opened_on;
     self.status = doc.condition;
     self.owner_id = doc.owner_id;
     self.data_open = {};
@@ -14,8 +14,8 @@ function CareCase(doc) {
         self.danger_signs();
         self.process_actions();
 
-        emit_array([self.owner_id], [self.opened_on_date], self.data_open);
-        emit_array([self.owner_id], [self.case.DA], self.data_dob);
+        emit_array([self.owner_id], [normalizeDate(self.opened_on_date)], self.data_open);
+        emit_array([self.owner_id], [normalizeDate(self.case.DA)], self.data_dob);
     }
 
     self.general = function () {
@@ -42,7 +42,7 @@ function CareCase(doc) {
 
     self.outcomes = function () {
         if (self.case.closed) {
-            emit(['case_closed_'+self.status, new Date(self.case.closed_on)], 1)
+            emit(['case_closed_'+self.status, normalizeDate(self.case.closed_on)], 1)
         }
     }
 
@@ -140,7 +140,8 @@ function CareCase(doc) {
             }
         }
 
-        if (forms_completed[ns_rc_reference]) {
+        var rc_ref = forms_completed[ns_rc_reference];
+        if (rc_ref) {
             var min = forms_completed[ns_as_contre_reference_dune_accouche];
             var f2 = forms_completed[ns_as_contre_reference_dune_femme_enceinte];
             var f3 = forms_completed[ns_as_contre_reference_dune_nouveau_ne];
@@ -152,8 +153,14 @@ function CareCase(doc) {
             }
 
             if (min) {
-                var val = min.getTime() - forms_completed[ns_rc_reference].getTime();
-                emit([self.owner_id, 'ref_counter_ref_time', min], val)
+                var val = min.getTime() - rc_ref.getTime();
+                emit([self.owner_id, 'ref_counter_ref_time', normalizeDate(min)], val)
+            }
+
+            var suivi_ref = forms_completed[ns_rc_suivi_de_reference];
+            if (suivi_ref) {
+                var val = suivi_ref.getTime() - rc_ref.getTime();
+                emit([self.owner_id, 'ref_suiviref_time', normalizeDate(suivi_ref)], val)
             }
         }
     }
@@ -207,14 +214,14 @@ function CareCase(doc) {
                 data_dob_adj.birth_one_month_ago_followup_x0 = 1;
             }
 
-            emit_array([self.owner_id], [adjusted_date], data_dob_adj);
+            emit_array([self.owner_id], [normalizeDate(adjusted_date)], data_dob_adj);
         }
     }
 
     function _emit_referral(date_str) {
         if (date_str.trim()) {
             var adjusted_date = adjust_date(new Date(date_str).getTime(), 30);
-            emit([self.owner_id, 'referrals_open_30_days', adjusted_date], 1);
+            emit([self.owner_id, 'referrals_open_30_days', normalizeDate(adjusted_date)], 1);
         }
     }
 
