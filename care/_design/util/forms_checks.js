@@ -38,9 +38,8 @@ function isCAREWomanCase(doc) {
     // TODO: remove date constraint after QA
     if (isCARECase(doc) && doc.type === 'Woman') {
         var op = new Date(doc.opened_on);
-        var min = new Date(2013,1,1,0,0,0,0);
-        var max = new Date(2013,2,1,0,0,0,0)
-        return min <= op && op <= max;
+        var max = new Date(2013,3,1,0,0,0,0);
+        return op <= max;
     }
 }
 

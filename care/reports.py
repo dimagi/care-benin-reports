@@ -80,8 +80,7 @@ class MEGeneral(CareGroupReport):
         'birth_place_autre',
     )
 
-    village = Column(
-        "Village", calculate_fn=groupname)
+    village = Column("Village", calculate_fn=groupname)
 
     ref_counter_ref_time = Column("Mean time between reference and counter reference", key="ref_counter_ref_time",
                                   rotate=True, reduce_fn=MeanHours())
@@ -272,8 +271,7 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
             'post_natal_followups_none', #requires xform_xmlns in case actions
         )
 
-        nurse = Column(
-            "Nurse", calculate_fn=username)
+        nurse = Column("Nurse", calculate_fn=username)
 
         cpn_exam_total = KeyView(key="cpn_exam_total")
 
@@ -409,6 +407,7 @@ class Referrals(CareGroupReport):
     @property
     def keys(self):
         return [['village']]
+
 
 class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
     name = "Outcomes"
