@@ -63,7 +63,7 @@ class MeanHours(fn.mean):
 class MEGeneral(CareGroupReport):
     name = "M&E General"
     slug = "cb_gen"
-    couch_view = "care/by_village_case"
+    couch_view = "benin/by_village_case"
 
     default_column_order = (
         'village',
@@ -139,7 +139,7 @@ class MEMedical(CareGroupReport):
     name = "M&E Medical"
     slug = "cb_med"
 
-    couch_view = "care/by_village_case"
+    couch_view = "benin/by_village_case"
 
     default_column_order = (
         'village',
@@ -183,11 +183,11 @@ class MEMedical(CareGroupReport):
                                   help_text="Nombre de femmes enceintes suivies par village")
 
     high_risk_pregnancy = Column("High risk pregnancies", key="high_risk_pregnancy",
-                                 couch_view="care/by_village_form", startkey_fn=lambda x: [],
+                                 couch_view="benin/by_village_form", startkey_fn=lambda x: [],
                                  help_text="Nombre de grossesse à risque détectés par village")
 
     anemic_pregnancy = Column("Anemic pregnancies", key="anemic_pregnancy",
-                              couch_view="care/by_village_form", startkey_fn=lambda x: [],
+                              couch_view="benin/by_village_form", startkey_fn=lambda x: [],
                               help_text="Nombre de femmes enceintes souffrant d’anémie par village")
 
     # birth
@@ -196,20 +196,20 @@ class MEMedical(CareGroupReport):
         help_text="Nombre de cas de nouvelles accouchées enregistrées et ouverts par village")
 
     stillborns = Column("Stillborns", key="stillborn",
-                        couch_view="care/by_village_form", startkey_fn=lambda x: [],
+                        couch_view="benin/by_village_form", startkey_fn=lambda x: [],
                         help_text="Nombre de mort-nés par village   Seulement pour les accouchements chez le CS")
 
     failed_pregnancy = Column("Failed pregnancies", key="pregnancy_failed",
-                              couch_view="care/by_village_form", startkey_fn=lambda x: [],
+                              couch_view="benin/by_village_form", startkey_fn=lambda x: [],
                               help_text="""Nombre de fausses couches par village Est-ce que ça inclue
                         les grossesse échoués? – tout grosseses arreter avant 6m""")
 
     maternal_death = Column("Maternal deaths", key="maternal_death",
-                            couch_view="care/by_village_form", startkey_fn=lambda x: [],
+                            couch_view="benin/by_village_form", startkey_fn=lambda x: [],
                             help_text="Nombre de décès maternels par village")
 
     child_death_7_days = Column("Babies died before 7 days", key="child_death_7_days",
-                                couch_view="care/by_village_form", startkey_fn=lambda x: [],
+                                couch_view="benin/by_village_form", startkey_fn=lambda x: [],
                                 help_text="Nombre de décès d’enfants de moins de 7 jours par village ")
 
     births_total_view = KeyView(key="birth_one_month_ago")
@@ -306,7 +306,7 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
     datespan_default_days = 30
     exportable = True
 
-    couch_view = "care/by_user_form"
+    couch_view = "benin/by_user_form"
 
     default_column_order = (
         'nurse',
@@ -375,7 +375,7 @@ class Referrals(CareGroupReport):
     name = "Referrals"
     slug = "cb_referrals"
 
-    couch_view = "care/by_village_form"
+    couch_view = "benin/by_village_form"
 
     # NOTE: all require village to be loaded into the forms
     default_column_order = (
@@ -472,7 +472,7 @@ class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParameter
     datespan_default_days = 30
     exportable = True
 
-    couch_view = "care/outcomes"
+    couch_view = "benin/outcomes"
 
     row_list = (
         {"name": "Cases closed (enceinte)",
@@ -520,7 +520,7 @@ class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParame
 
     @property
     def keys(self):
-        return [row['key'][1] for row in get_db().view("care/danger_signs",
+        return [row['key'][1] for row in get_db().view("benin/danger_signs",
                                                        reduce=True, group=True,
                                                        group_level=2)]
 
@@ -535,7 +535,7 @@ class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParame
         startkey, endkey = self.start_and_end_keys
 
         for key in self.keys:
-            row = get_db().view("care/danger_signs",
+            row = get_db().view("benin/danger_signs",
                                 startkey=['danger_sign', key, startkey],
                                 endkey=['danger_sign', key, endkey, {}],
                                 reduce=True,
