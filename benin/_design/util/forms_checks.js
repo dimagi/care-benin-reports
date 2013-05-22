@@ -23,15 +23,16 @@ function normalizeDate(date) {
     return d;
 }
 
+var domain = 'carebeninqa'
 function isCAREForm(doc) {
     return (doc.doc_type === 'XFormInstance'
-        && doc.domain === 'project'
+        && doc.domain === domain
         && doc.form && doc.form.meta);
 }
 
 function isCARECase(doc) {
     return (doc.doc_type === 'CommCareCase'
-        && doc.domain === 'project');
+        && doc.domain === domain);
 }
 
 function isCAREWomanCase(doc) {

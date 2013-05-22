@@ -332,20 +332,26 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
 
     ref_suiviref_time = Column("Mean time between referral and suivi de referral",
                                key="ref_suiviref_time", reduce_fn=MeanHours(),
+                               couch_view="benin/by_village_case",
                                help_text="Délai entre la référence et le suivi de la référence")
 
-    post_natal_followups_total_view = KeyView(key="post_natal_followups_total")
+    post_natal_followups_total_view = KeyView(key="post_natal_followups_total",
+                                              couch_view="benin/by_village_case", startkey_fn=lambda x: [])
     post_natal_followups_15m_view = AggregateKeyView(combine_indicator,
-                                                     KeyView(key="post_natal_followups_15m"),
+                                                     KeyView(key="post_natal_followups_15m",
+                                                             couch_view="benin/by_village_case", startkey_fn=lambda x: []),
                                                      post_natal_followups_total_view)
     post_natal_followups_6h_view = AggregateKeyView(combine_indicator,
-                                                    KeyView(key="post_natal_followups_6h"),
+                                                    KeyView(key="post_natal_followups_6h",
+                                                            couch_view="benin/by_village_case", startkey_fn=lambda x: []),
                                                     post_natal_followups_total_view)
     post_natal_followups_sortie_view = AggregateKeyView(combine_indicator,
-                                                        KeyView(key="post_natal_followups_sortie"),
+                                                        KeyView(key="post_natal_followups_sortie",
+                                                                couch_view="benin/by_village_case", startkey_fn=lambda x: []),
                                                         post_natal_followups_total_view)
     post_natal_followups_none_view = AggregateKeyView(combine_indicator,
-                                                      KeyView(key="post_natal_followups_none"),
+                                                      KeyView(key="post_natal_followups_none",
+                                                              couch_view="benin/by_village_case", startkey_fn=lambda x: []),
                                                       post_natal_followups_total_view)
 
     pnf_help="""Proportion d’accouchés suivi à 15 min  Proportion d’accouchés suivi à 6h,

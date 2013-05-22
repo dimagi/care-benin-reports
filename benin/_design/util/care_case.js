@@ -1,7 +1,7 @@
 function CareCase(doc) {
     var self = this;
     self.case = doc;
-    self.opened_on_date = self.case.opened_on;
+    self.opened_on_date = doc.opened_on;
     self.status = doc.condition;
     self.owner_id = doc.owner_id;
     self.data_open = {};
@@ -128,16 +128,18 @@ function CareCase(doc) {
         }
 
         if (forms_completed[ns_as_accouchement] && self.case.DA) {
-            self.data_dob.post_natal_followups_total = 1;
+            var data_nurse = {};
+            data_nurse.post_natal_followups_total = 1;
             if (forms_completed[ns_as_surveillanceLorsDeLaSortieDuCS]) {
-                self.data_dob.post_natal_followups_sortie = 1;
+                data_nurse.post_natal_followups_sortie = 1;
             } else if (forms_completed[ns_as_surveillanceA6h]) {
-                self.data_dob.post_natal_followups_6h = 1;
+                data_nurse.post_natal_followups_6h = 1;
             } else if (forms_completed[ns_as_surveillanceA15m]) {
-                self.data_dob.post_natal_followups_15m = 1;
+                data_nurse.post_natal_followups_15m = 1;
             } else {
-                self.data_dob.post_natal_followups_none = 1;
+                data_nurse.post_natal_followups_none = 1;
             }
+            emit_array([self.user_id], [normalizeDate(self.case.DA)], data_nurse);
         }
 
         var rc_ref = forms_completed[ns_rc_reference];
@@ -160,7 +162,7 @@ function CareCase(doc) {
             var suivi_ref = forms_completed[ns_rc_suivi_de_reference];
             if (suivi_ref) {
                 var val = suivi_ref.getTime() - rc_ref.getTime();
-                emit([self.owner_id, 'ref_suiviref_time', normalizeDate(suivi_ref)], val)
+                emit([self.user_id, 'ref_suiviref_time', normalizeDate(suivi_ref)], val)
             }
         }
     }
