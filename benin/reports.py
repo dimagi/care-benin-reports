@@ -57,7 +57,7 @@ class CareGroupReport(BasicTabularReport, CustomProjectReport, ProjectReportPara
 class MeanHours(fn.mean):
     def __call__(self, stats):
         millis = super(MeanHours, self).__call__(stats, 0)
-        return millis / 60 * 60 * 1000 if isinstance(millis, Number) else millis
+        return millis / (60 * 60 * 1000) if isinstance(millis, Number) else millis
 
 
 class MEGeneral(CareGroupReport):
@@ -73,6 +73,7 @@ class MEGeneral(CareGroupReport):
         'danger_sign_knowledge_post_partum',
         'danger_sign_knowledge_newborn',
         'birth_place_mat_isolee',
+        'birth_place_centre_de_sante',
         'birth_place_cs_arrondissement',
         'birth_place_cs_commune',
         'birth_place_hopital',
@@ -91,6 +92,9 @@ class MEGeneral(CareGroupReport):
     birth_place_help = "Distribution des lieux d’accouchement par village"
     birth_place_group = DataTablesColumnGroup("Birth place")
     birth_place_mat_isolee = Column("Maternite Isolee", key="birth_place_mat_isolee",
+                                    group=birth_place_group,
+                                    help_text=birth_place_help)
+    birth_place_centre_de_sante = Column("centre de santé", key="birth_place_centre_de_sante",
                                     group=birth_place_group,
                                     help_text=birth_place_help)
     birth_place_cs_arrondissement = Column("CS Arrondissement", key="birth_place_CS_arrondissement",

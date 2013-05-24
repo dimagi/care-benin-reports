@@ -57,13 +57,15 @@ function CareCase(doc) {
     self.danger_signs = function () {
         var danger_signs_pregnant = ['connais_bebe_bouge_moins',
             'connais_convulsions',
-            'connais_fatigue_important',
+            'connais_fatigue_importante',
             'connais_fievre',
-            'connais_maux_de_ventre_violents connais_maux_tete_violent',
+            'connais_maux_de_ventre_violents',
+            'connais_maux_tete_violent',
             'connais_pertes_eaux',
             'connais_respiration_difficile',
             'connais_saignement',
-            'connais_visage_ou_mains_enfles connais_vision_floue',
+            'connais_visage_ou_mains_enfles',
+            'connais_vision_floue',
             'connais_vomissements_importants'];
         if (count_matching_props(self.case, danger_signs_pregnant, 'oui') >= 3){
             self.data_open.danger_sign_knowledge_pregnancy = 1;
@@ -180,6 +182,13 @@ function CareCase(doc) {
 
             if (self.case.lieu_acc) {
                 self.data_dob['birth_place_'+self.case.lieu_acc] = 1;
+            } else {
+                for (var i = 0, l = self.case.actions.length; i < l; i++) {
+                    if (self.case.actions[i].xform_xmlns === ns_as_accouchement){
+                        self.data_dob.birth_place_CS_arrondissement = 1;
+                        break;
+                    }
+                }
             }
 
             var data_dob_adj = {};
