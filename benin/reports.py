@@ -54,10 +54,13 @@ class CareGroupReport(BasicTabularReport, CustomProjectReport, ProjectReportPara
         return dict([(group._id, group.name) for group in self.groups])
 
 
-class MeanHours(fn.mean):
+class MeanTime(fn.mean):
     def __call__(self, stats):
-        millis = super(MeanHours, self).__call__(stats, 0)
-        return millis / 60 * 60 * 1000 if isinstance(millis, Number) else millis
+        millis = super(MeanTime, self).__call__(stats, 0)
+        if isinstance(millis, Number):
+            return "%s mins" % (millis / (1000 * 60))
+        else:
+            return millis
 
 
 class MEGeneral(CareGroupReport):
@@ -84,13 +87,16 @@ class MEGeneral(CareGroupReport):
     village = Column("Village", calculate_fn=groupname)
 
     ref_counter_ref_time = Column("Mean time between reference and counter reference", key="ref_counter_ref_time",
-                                  reduce_fn=MeanHours(),
+                                  reduce_fn=MeanTime(),
                                   help_text="Délai entre la référence et la contre référence des agents de santé")
 
     # birth
     birth_place_help = "Distribution des lieux d’accouchement par village"
     birth_place_group = DataTablesColumnGroup("Birth place")
     birth_place_mat_isolee = Column("Maternite Isolee", key="birth_place_mat_isolee",
+                                    group=birth_place_group,
+                                    help_text=birth_place_help)
+    birth_place_centre_de_sante = Column("centre de santé", key="birth_place_centre_de_sante",
                                     group=birth_place_group,
                                     help_text=birth_place_help)
     birth_place_cs_arrondissement = Column("CS Arrondissement", key="birth_place_CS_arrondissement",
@@ -331,7 +337,7 @@ class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixi
                            CPN entièrement respecté (rempli) par agent de santé""")
 
     ref_suiviref_time = Column("Mean time between referral and suivi de referral",
-                               key="ref_suiviref_time", reduce_fn=MeanHours(),
+                               key="ref_suiviref_time", reduce_fn=MeanTime(),
                                couch_view="benin/by_village_case",
                                help_text="Délai entre la référence et le suivi de la référence")
 

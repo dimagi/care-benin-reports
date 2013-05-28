@@ -110,7 +110,7 @@ function CareForm(doc) {
             } else if (condition === 'accouchee') {
                 if (self.form.lequel_referer === 'mere') {
                     self.village_data.referral_per_type_accouchee = 1;
-                } else if (self.form.laquel_referer === 'bebe') {
+                } else if (self.form.lequel_referer === 'bebe') {
                     self.village_data.referral_per_type_nouveau_ne = 1;
                 }
             }
