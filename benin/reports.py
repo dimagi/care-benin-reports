@@ -76,6 +76,7 @@ class MEGeneral(CareGroupReport):
         'danger_sign_knowledge_post_partum',
         'danger_sign_knowledge_newborn',
         'birth_place_mat_isolee',
+        'birth_place_centre_de_sante',
         'birth_place_cs_arrondissement',
         'birth_place_cs_commune',
         'birth_place_hopital',
@@ -467,7 +468,7 @@ class Referrals(CareGroupReport):
 
     references_to_clinic_view = AggregateKeyView(combine_indicator,
                                                  KeyView(key="reference_to_clinic_went"),
-                                                 KeyView(key="references_to_clinic"))
+                                                 KeyView(key="reference_to_clinic"))
     references_to_clinic = Column("Rate of references which went to clinic",
                                   key=references_to_clinic_view, help_text="Taux de références fermées qui sont "
                                                                            "allées au centre de santé par village")
