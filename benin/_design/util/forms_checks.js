@@ -23,7 +23,7 @@ function normalizeDate(date) {
     return d;
 }
 
-var domain = 'carebeninqa'
+var domain = 'project'
 function isCAREForm(doc) {
     return (doc.doc_type === 'XFormInstance'
         && doc.domain === domain
