@@ -4,8 +4,8 @@ from numbers import Number
 from corehq.apps.reports.basic import BasicTabularReport, Column, GenericTabularReport
 from corehq.apps.reports.datatables import DataTablesHeader, DataTablesColumnGroup, \
     DataTablesColumn, DTSortType
+from corehq.apps.reports.filters.dates import DatespanFilter
 from corehq.apps.reports.standard import ProjectReportParametersMixin, CustomProjectReport, DatespanMixin
-from corehq.apps.reports.fields import DatespanField
 from corehq.apps.groups.models import Group
 from couchdbkit_aggregate import KeyView, AggregateKeyView, fn
 from dimagi.utils.decorators.memoized import memoized
@@ -30,7 +30,7 @@ def combine_indicator(num, denom):
 
 
 class CareGroupReport(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
-    field_classes = (DatespanField,)
+    field_classes = (DatespanFilter,)
     datespan_default_days = 30
     exportable = True
 
@@ -309,7 +309,7 @@ class MEMedical(CareGroupReport):
 class Nurse(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
     name = "Nurse"
     slug = "cb_nurse"
-    field_classes = (DatespanField,)
+    field_classes = (DatespanFilter,)
     datespan_default_days = 30
     exportable = True
 
@@ -481,7 +481,7 @@ class Referrals(CareGroupReport):
 class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
     name = "Outcomes"
     slug = "cb_outcomes"
-    fields = ('corehq.apps.reports.fields.DatespanField',)
+    fields = ('corehq.apps.reports.filters.dates.DatespanFilter',)
     datespan_default_days = 30
     exportable = True
 
@@ -522,7 +522,7 @@ class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParameter
 class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
     name = "Danger sign distribution"
     slug = "cb_danger"
-    fields = ('corehq.apps.reports.fields.DatespanField',)
+    fields = ('corehq.apps.reports.filters.dates.DatespanFilter',)
     datespan_default_days = 30
     exportable = True
 
