@@ -4,6 +4,7 @@ function CareCase(doc) {
     self.opened_on_date = doc.opened_on;
     self.status = doc.condition;
     self.owner_id = doc.owner_id;
+    self.user_id = doc.user_id;
     self.data_open = {};
     self.data_dob = {};
 
