@@ -24,7 +24,7 @@ def groupname(key, report):
 
 def combine_indicator(num, denom):
     if isinstance(num, Number) and isinstance(denom, Number):
-        return num * 100 / denom
+        return '%s %%' % (num * 100 / denom)
     else:
         return NO_VALUE
 
@@ -54,11 +54,28 @@ class CareGroupReport(BasicTabularReport, CustomProjectReport, ProjectReportPara
         return dict([(group._id, group.name) for group in self.groups])
 
 
+def td_format(millis):
+    td_seconds = millis / 1000
+    periods = [
+        ('day', 60*60*24),
+        ('hour', 60*60),
+        ('minute', 60),
+    ]
+
+    for name, seconds in periods:
+        if td_seconds > seconds:
+            value, seconds = divmod(td_seconds, seconds)
+            if value == 1:
+                return "%s %s" % (value, name)
+            else:
+                return "%s %ss" % (value, name)
+
 class MeanTime(fn.mean):
+
     def __call__(self, stats):
         millis = super(MeanTime, self).__call__(stats, 0)
         if isinstance(millis, Number):
-            return "%s mins" % (millis / (1000 * 60))
+            return td_format(millis)
         else:
             return millis
 
@@ -492,8 +509,8 @@ class Outcomes(GenericTabularReport, CustomProjectReport, ProjectReportParameter
          "view": KeyView(key="case_closed_enceinte")},
         {"name": "Cases closed (accouchee)",
          "view": KeyView(key="case_closed_accouchee")},
-        {"name": "Numbre of births at clinic with GATPA performed",
-         "view": KeyView(key="birth_gapta")},
+        {"name": "Percentage of births at clinic with GATPA performed",
+         "view": AggregateKeyView(combine_indicator, KeyView(key="birth_gapta"), KeyView(key="birth_total"))},
         {"name": "Total references to clinic (enceinte)",
          "view": KeyView(key="references_to_clinic_total_enceinte")},
         {"name": "Total references to clinic (accouchee)",

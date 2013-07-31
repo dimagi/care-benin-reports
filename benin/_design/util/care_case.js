@@ -4,6 +4,7 @@ function CareCase(doc) {
     self.opened_on_date = doc.opened_on;
     self.status = doc.condition;
     self.owner_id = doc.owner_id;
+    self.user_id = doc.user_id;
     self.data_open = {};
     self.data_dob = {};
 
@@ -25,7 +26,7 @@ function CareCase(doc) {
             }
         } else if (self.status === 'accouchee') {
             if (self.case.suivi_count_enc && self.case.suivi_count_enc > 0) {
-                self.data_open.birth_cpn_total = 1;
+                self.data_dob.birth_cpn_total = 1;
 
                 if (self.case.CPN4 === 'oui') {
                     self.data_dob.birth_cpn_4 = 1;
