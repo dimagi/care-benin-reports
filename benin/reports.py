@@ -8,6 +8,7 @@ from corehq.apps.reports.standard import ProjectReportParametersMixin, CustomPro
 from corehq.apps.reports.fields import DatespanField
 from corehq.apps.groups.models import Group
 from couchdbkit_aggregate import KeyView, AggregateKeyView, fn
+from dimagi.utils.couch.loosechange import map_reduce
 from dimagi.utils.decorators.memoized import memoized
 from couchdbkit_aggregate.fn import NO_VALUE
 from dimagi.utils.couch.database import get_db
@@ -575,3 +576,89 @@ class DangerSigns(GenericTabularReport, CustomProjectReport, ProjectReportParame
             row = row.first()
             val = reduce_fn(row)
             yield [key, fdd(val, val)]
+
+
+def health_center_name(key, report):
+    return report.hc[key[0]]
+
+
+class HealthCenter(BasicTabularReport, CustomProjectReport, ProjectReportParametersMixin, DatespanMixin):
+    name = "Health Center"
+    slug = "health_center"
+    field_classes = (DatespanField,)
+    datespan_default_days = 30
+    exportable = True
+
+    couch_view = "benin/by_user_form"
+
+    default_column_order = (
+        'health_center',
+        'cpn_exam_forms',
+        'new_acceptants_for_fp',
+        'birth_complications_referred',
+        'stillborns',
+        'high_risk_pregnancy',
+        'pregnant_anemia',
+    )
+
+    health_center = Column("Health Center", calculate_fn=health_center_name)
+
+    cpn_exam_forms = Column("Women received for CPN", key='cpn_exam_forms')
+
+    new_acceptants_for_fp = Column("Number of new acceptants for FP methods",
+                                   key='acceptants_for_fp')
+
+    birth_complications_referred = Column("# referred women for complications during birth",
+                                          key='birth_complications_referred')
+
+    stillborns = Column("Number of stillborns", key='stillborn')
+
+    high_risk_pregnancy = Column("Number of high risk pregnancies detected", key='high_risk_pregnancy')
+
+    pregnant_anemia = Column("Number of pregnant women with anemia", key='pregnant_anemia')
+
+    @property
+    @memoized
+    def hc(self):
+        return dict([(user['_id'], user.user_data.get('CS')) for user in self.users])
+
+    @property
+    @memoized
+    def users(self):
+        agents_de_sante = Group.get('12cfe9ecf54249e214072aad08d03a1e')
+
+        return self.get_all_users_by_domain(
+            group=agents_de_sante,
+        )
+
+    @property
+    def start_and_end_keys(self):
+        return ([self.datespan.startdate_param_utc],
+                [self.datespan.enddate_param_utc])
+
+    @property
+    def keys(self):
+        return [[user['_id']] for user in self.users]
+
+    @property
+    def rows(self):
+        rows = list(super(HealthCenter, self).rows)
+        rows_by_hc = map_reduce(emitfunc=lambda r: [(r[0],)], reducefunc=self.reduce, data=rows, include_docs=True)
+        return rows_by_hc.values()
+
+    def reduce(self, rows):
+        if not rows:
+            return rows
+
+        def unwrap(row):
+            return [val['sort_key'] if isinstance(val, dict) else val for val in row]
+
+        def combine(vals):
+            nums = [v for v in vals if isinstance(v, int)]
+            if nums:
+                res = sum(nums)
+                return fdd(res, res)
+            else:
+                return fdd(vals[0], vals[0])
+
+        return [combine(unwrap(x)) for x in zip(*rows)]
