@@ -14,15 +14,6 @@ function dateBreakdown(dateString, breakdown) {
     return ret;
 }
 
-function normalizeDate(date) {
-    var d = date;
-    if (typeof date === 'string'){
-        d = new Date(date);
-    }
-    d.setUTCHours(12,0,0,0);
-    return d;
-}
-
 var domain = 'project'
 function isCAREForm(doc) {
     return (doc.doc_type === 'XFormInstance'

@@ -8,5 +8,6 @@ CUSTOM_REPORTS = (
         reports.Outcomes,
         reports.DangerSigns,
         reports.Referrals,
+        reports.HealthCenter,
     )),
 )

@@ -18,7 +18,7 @@ function CareForm(doc) {
         self.danger_signs(true);
 
         // TODO: get village
-        emit_array(['village'], [normalizeDate(self.received_on)], self.village_data);
+        emit_array(['village'], [self.received_on], self.village_data);
     }
 
     self.by_user = function() {
@@ -38,9 +38,31 @@ function CareForm(doc) {
             }
             self.user_data.cpn_exam_total = total;
             self.user_data.cpn_exam_answered = non_blank;
+            self.user_data.cpn_exam_forms = 1;
+
+            if (self.form.classifier_anemie_severe === 'oui' || self.form.classifier_anemie_modere === 'oui') {
+
+                self.user_data.pregnant_anemia = 1;
+            }
+        } else if (isAS_CounselingLorsDeLaSortieDuCS(self.doc)) {
+            if (self.form.demander_choisir_methode_PF === 'oui') {
+                self.user_data.acceptants_for_fp = 1;
+            }
+        } else if (isAS_Accouchement(self.doc)) {
+            if (self.form.etat_enfant === 'decedee') {
+                self.user_data.stillborn = 1;
+            }
+
+            if (self.form.etat_mere === 'referee') {
+                self.user_data.birth_complications_referred = 1;
+            }
+        } else if (isAS_CompleterEnregistrement(self.doc)) {
+            if (self.form.Alerte_GARE === 'ok' || self.form.avis_mort_ne === 'ok') {
+                self.user_data.high_risk_pregnancy = 1;
+            }
         }
 
-        emit_array([self.form.meta.userID], [normalizeDate(self.received_on)], self.user_data);
+        emit_array([self.form.meta.userID], [self.received_on], self.user_data);
     }
 
     self.outcomes = function () {
@@ -61,7 +83,7 @@ function CareForm(doc) {
             }
         }
 
-        emit_array([], [normalizeDate(self.received_on)], self.outcome_data);
+        emit_array([], [self.received_on], self.outcome_data);
     }
 
     self.danger_signs = function (by_village) {
@@ -169,7 +191,7 @@ function CareForm(doc) {
                 if (by_village) {
                     self.village_data[key] = 1;
                 } else {
-                    emit(['danger_sign', s, normalizeDate(self.received_on)], 1);
+                    emit(['danger_sign', s, self.received_on], 1);
                 }
             }
         }
