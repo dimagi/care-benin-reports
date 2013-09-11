@@ -14,6 +14,8 @@ from couchdbkit_aggregate.fn import NO_VALUE
 from dimagi.utils.couch.database import get_db
 from corehq.apps.reports.util import format_datatables_data as fdd
 
+AGENTS_DE_SANTE_GROUP = '12cfe9ecf54249e214072aad08d03a1e'
+
 
 def username(key, report):
     return report.usernames[key[0]]
@@ -625,10 +627,10 @@ class HealthCenter(BasicTabularReport, CustomProjectReport, ProjectReportParamet
     @property
     @memoized
     def users(self):
-        agents_de_sante = Group.get('12cfe9ecf54249e214072aad08d03a1e')
+        group = Group.get(AGENTS_DE_SANTE_GROUP)
 
         return self.get_all_users_by_domain(
-            group=agents_de_sante,
+            group=group,
         )
 
     @property
